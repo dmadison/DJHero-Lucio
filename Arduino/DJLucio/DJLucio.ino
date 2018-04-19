@@ -114,7 +114,12 @@ void loop() {
 
 void djController() {
 	// Aiming
-	aiming();
+	if (dj.buttonMinus()) {  // Vertical selector
+		aiming(0, dj.turntable());
+	}
+	else {
+		aiming(dj.turntable(), 0);
+	}
 
 	// Movement
 	joyWASD(dj.joyX(), dj.joyY());
@@ -133,26 +138,26 @@ void djController() {
 	emotes.press(dj.buttonPlus());
 }
 
-void aiming() {
+void aiming(int8_t xIn, int8_t yIn) {
 	const int8_t HorizontalSens = 5;
 	const int8_t VerticalSens = 2;
 	const int8_t MaxInput = 20;  // Get rid of extranous values
 
-	static int8_t lastAim = 0;
-	
-	int8_t aimAmount = dj.turntable();
+	static int8_t lastAim[2] = { 0, 0 };
+	int8_t * aim[2] = { &xIn, &yIn };  // Store in array for iterative access
 
-	if (abs(aimAmount) >= MaxInput) {
-		aimAmount = lastAim;
+	// Iterate through X/Y
+	for (int i = 0; i < 2; i++) {
+		// Check if above max threshold
+		if (abs(*aim[i]) >= MaxInput) {
+			*aim[i] = lastAim[i];
+		}
+
+		// Set 'last' value to current
+		lastAim[i] = *aim[i];
 	}
 
-	if (dj.buttonMinus()) {  // Vertical selector
-		Mouse.move(0, aimAmount * VerticalSens);  // Invert so clockwise is down
-	}
-	else {  // Horizontal movement (default)
-		Mouse.move(aimAmount * HorizontalSens, 0);
-	}
-	lastAim = aimAmount;
+	Mouse.move(xIn * HorizontalSens, yIn * VerticalSens);
 }
 
 void joyWASD(uint8_t x, uint8_t y) {

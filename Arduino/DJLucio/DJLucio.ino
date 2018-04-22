@@ -83,7 +83,9 @@ private:
 	long lastUpdate = 0;
 };
 
-RateLimiter pollRate(4);  // Controller update frequency, in ms
+// Rate limit functions, all times in milliseconds (ms)
+RateLimiter pollRate(4);  // Controller update rate
+RateLimiter reconnectRate(500);  // Controller reconnect rate
 
 #define MAIN_TABLE right
 
@@ -133,14 +135,8 @@ void setup() {
 }
 
 void loop() {
-	if (pollRate.ready()) {
-		if (dj.update()) {
-			djController();
-		}
-		else {
-			dj.reconnect();
-			delay(250);
-		}
+	if (controllerReady()) {
+		djController();
 	}
 }
 
@@ -241,6 +237,22 @@ boolean effectChange() {
 	}
 	else if (effectLevel < triggerLevel) {
 		effectTriggered = false;
+	}
+
+	return false;
+}
+
+boolean controllerReady() {
+	static boolean connected = true;
+
+	// Attempt to reconnect at a regular interval
+	if (!connected && reconnectRate.ready()) {
+		connected = dj.reconnect();
+	}
+	
+	// If connected, update at a regular interval
+	if (connected && pollRate.ready()) {
+		return connected = dj.update();
 	}
 
 	return false;

@@ -115,9 +115,26 @@ button moveBack('s');
 button moveRight('d');
 button jump(' ');
 
+// Debug Flags (uncomment to add)
+// #define DEBUG // Enable to use any prints
+// #define DEBUG_RAW
+// #define DEBUG_COMMS
+
+#ifdef DEBUG
+#define DEBUG_PRINT(x)   do {Serial.print(x);}   while(0)
+#define DEBUG_PRINTLN(x) do {Serial.println(x);} while(0)
+#else
+#define DEBUG_PRINT(x)
+#define DEBUG_PRINTLN(x)
+#endif
+
+#define D_COMMS(x) DEBUG_PRINTLN(x)
+
 void setup() {
-	//Serial.begin(115200);
-	//while (!Serial);  // Wait for connection
+	#ifdef DEBUG
+	Serial.begin(115200);
+	while (!Serial);  // Wait for connection
+	#endif
 
 	pinMode(9, INPUT_PULLUP);
 
@@ -129,9 +146,10 @@ void setup() {
 	startMultiplexer();
 
 	while (!dj.connect()) {
-		Serial.println("Couldn't connect to controller!");
+		DEBUG_PRINTLN(F("Couldn't connect to turntable!"));
 		delay(500);
 	}
+	DEBUG_PRINTLN(F("Connected! Starting..."));
 }
 
 void loop() {
@@ -261,6 +279,7 @@ boolean controllerReady() {
 	// Attempt to reconnect at a regular interval
 	if (!connected && reconnectRate.ready()) {
 		connected = dj.reconnect();
+		D_COMMS("Attempting to reconnect");
 	}
 	
 	// If connected, update at a regular interval
@@ -268,6 +287,13 @@ boolean controllerReady() {
 		connected = dj.update();  // New data
 		if (!connected) {
 			releaseAll();  // Something went wrong, clear current presses
+			D_COMMS("Bad update! Must reconnect");
+		}
+		else {
+			D_COMMS("Successul update!");
+			#ifdef DEBUG_RAW
+			dj.printDebug();
+			#endif
 		}
 		return connected;
 	}

@@ -94,24 +94,7 @@ private:
 	long lastUpdate = 0;
 };
 
-// Rate limit functions, all times in milliseconds (ms)
-RateLimiter pollRate(UpdateRate);  // Controller update rate
-RateLimiter reconnectRate(ConnectRate);  // Controller reconnect rate
-RateLimiter fxTimeout(EffectsTimeout);  // Timeout for the fx tracker to be zero'd
-
-#if MAIN_TABLE==right
-#define ALT_TABLE left
-#elif MAIN_TABLE==left
-#define ALT_TABLE right
-#endif
-
 DJTurntableController dj;
-
-DJTurntableController::TurntableExpansion * mainTable = &dj.MAIN_TABLE;
-DJTurntableController::TurntableExpansion * altTable = &dj.ALT_TABLE;
-
-DJTurntableController::EffectRollover fx(dj);
-int16_t fxTotal = 0;
 
 button fire(MOUSE_LEFT, MOUSE);
 button boop(MOUSE_RIGHT, MOUSE);
@@ -128,6 +111,22 @@ button moveLeft('a');
 button moveBack('s');
 button moveRight('d');
 button jump(' ');
+
+#if MAIN_TABLE==right
+#define ALT_TABLE left
+#elif MAIN_TABLE==left
+#define ALT_TABLE right
+#endif
+
+DJTurntableController::TurntableExpansion * mainTable = &dj.MAIN_TABLE;
+DJTurntableController::TurntableExpansion * altTable = &dj.ALT_TABLE;
+
+DJTurntableController::EffectRollover fx(dj);
+int16_t fxTotal = 0;
+
+RateLimiter pollRate(UpdateRate);  // Controller update rate
+RateLimiter reconnectRate(ConnectRate);  // Controller reconnect rate
+RateLimiter fxTimeout(EffectsTimeout);  // Timeout for the fx tracker to be zero'd
 
 #ifdef DEBUG
 #define DEBUG_PRINT(x)   do {Serial.print(x);}   while(0)

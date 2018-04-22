@@ -90,6 +90,7 @@ private:
 // Rate limit functions, all times in milliseconds (ms)
 RateLimiter pollRate(4);  // Controller update rate
 RateLimiter reconnectRate(500);  // Controller reconnect rate
+RateLimiter fxTimeout(1200);  // Timeout for the fx tracker to be zero'd
 
 #define MAIN_TABLE right
 
@@ -239,6 +240,15 @@ boolean effectChange() {
 	const int8_t MaxChange = 5;
 
 	int8_t fxChange = fx.getChange();  // Change since last update
+
+	if (fxChange != 0) {
+		fxTimeout.reset();  // Keep alive
+	}
+	else {
+		if (fxTimeout.ready()) {
+			fxTotal = 0;
+		}
+	}
 
 	if (fxChange > MaxChange) {  // Assumed spurious
 		fxChange = 0;

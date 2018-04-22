@@ -191,6 +191,9 @@ void djController() {
 
 	// Fun stuff!
 	emotes.press(dj.buttonPlus());
+
+	// --Cleanup--
+	resetEffect();
 }
 
 void aiming(int8_t xIn, int8_t yIn) {
@@ -238,11 +241,13 @@ boolean effectChange() {
 	}
 	fxTotal += fxChange;
 
-	if (abs(fxTotal) >= FxThreshold) {
-		fxTotal = 0;  // Reset
-		return true;
+	return abs(fxTotal) >= FxThreshold;
+}
+
+void resetEffect() {  // Resets the effect total 
+	if (effectChange()) {
+		fxTotal = 0;
 	}
-	return false;
 }
 
 boolean controllerReady() {

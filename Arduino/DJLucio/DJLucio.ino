@@ -128,6 +128,8 @@ RateLimiter pollRate(UpdateRate);  // Controller update rate
 RateLimiter reconnectRate(ConnectRate);  // Controller reconnect rate
 RateLimiter fxTimeout(EffectsTimeout);  // Timeout for the fx tracker to be zero'd
 
+const uint8_t SafetyPin = 9;
+
 #ifdef DEBUG
 #define DEBUG_PRINT(x)   do {Serial.print(x);}   while(0)
 #define DEBUG_PRINTLN(x) do {Serial.println(x);} while(0)
@@ -144,9 +146,9 @@ void setup() {
 	while (!Serial);  // Wait for connection
 	#endif
 
-	pinMode(9, INPUT_PULLUP);
+	pinMode(SafetyPin, INPUT_PULLUP);
 
-	if (digitalRead(9) == LOW) {
+	if (digitalRead(SafetyPin) == LOW) {
 		for (;;);  // Safety loop!
 	}
 

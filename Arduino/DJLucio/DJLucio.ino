@@ -240,15 +240,14 @@ void aiming(int8_t xIn, int8_t yIn) {
 }
 
 void joyWASD(uint8_t x, uint8_t y) {
-	button * movementKeys[4] = { &moveRight, &moveLeft, &moveForward, &moveBack }; // X+, X-, Y+, Y-
-	const uint8_t joyDeadzone = 7; // +/-, centered at 32
+	const uint8_t JoyCenter = 32;
+	const uint8_t JoyDeadzone = 6;  // +/-, centered at 32 in (0-63)
 
-	uint8_t joyXY[2] = { x, y };
+	moveLeft.press(x < JoyCenter - JoyDeadzone);
+	moveRight.press(x > JoyCenter + JoyDeadzone);
 
-	for (int i = 0; i < 2; i++) {
-		movementKeys[i * 2]->press(joyXY[i] >= 32 + joyDeadzone);
-		movementKeys[i * 2 + 1]->press(joyXY[i] <= 32 - joyDeadzone);
-	}
+	moveForward.press(y > JoyCenter + JoyDeadzone);
+	moveBack.press(y < JoyCenter - JoyDeadzone);
 }
 
 boolean effectChange() {

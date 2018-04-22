@@ -36,7 +36,6 @@ enum HID_Input_Type { KEYBOARD, MOUSE };
 class button {
 public:
 	const char key;
-	boolean pressed = 0;
 	const HID_Input_Type lib;
 
 	button(char k, HID_Input_Type t = KEYBOARD) : key(k), lib(t) {}
@@ -57,6 +56,9 @@ public:
 
 		pressed = state;
 	}
+
+private:
+	boolean pressed = 0;
 };
 
 const long UpdateRate = 4;  // Update frequency in ms

@@ -117,6 +117,7 @@ button jump(' ');
 
 // Debug Flags (uncomment to add)
 // #define DEBUG // Enable to use any prints
+// #define DEBUG_RAW
 
 #ifdef DEBUG
 #define DEBUG_PRINT(x)   do {Serial.print(x);}   while(0)
@@ -282,6 +283,11 @@ boolean controllerReady() {
 		connected = dj.update();  // New data
 		if (!connected) {
 			releaseAll();  // Something went wrong, clear current presses
+		}
+		else {
+			#ifdef DEBUG_RAW
+			dj.printDebug();
+			#endif
 		}
 		return connected;
 	}

@@ -40,7 +40,7 @@ public:
 
 	button(char k, HID_Input_Type t = KEYBOARD) : key(k), lib(t) {}
 
-	void press(boolean state) {
+	void press(boolean state = true) {
 		if (state == pressed) {
 			return; // Nothing to see here, folks
 		}
@@ -55,6 +55,10 @@ public:
 		}
 
 		pressed = state;
+	}
+
+	void release() {
+		press(false);
 	}
 
 private:

@@ -22,26 +22,16 @@
 #include <Mouse.h>
 #include <Keyboard.h>
 
-// In-game sensitivity of 6.5
-
-/* To-do:
-	#1: Support both turntables
-	#2: Fix the effect dial so it's more reliable
-	#3: Better / smoother aiming, probably with floats
-	-----(Also linked to sensitivity)
-*/
-
 enum HID_Input_Type { KEYBOARD, MOUSE };
 
 class button {
 public:
 	const char key;
-	boolean pressed = 0;
 	const HID_Input_Type lib;
 
 	button(char k, HID_Input_Type t = KEYBOARD) : key(k), lib(t) {}
 
-	void press(boolean state) {
+	void press(boolean state = true) {
 		if (state == pressed) {
 			return; // Nothing to see here, folks
 		}
@@ -57,10 +47,41 @@ public:
 
 		pressed = state;
 	}
+
+	void release() {
+		press(false);
+	}
+
+private:
+	boolean pressed = 0;
 };
 
-const long UpdateRate = 4;  // Update frequency in ms
-long lastUpdate = 0;
+class RateLimiter {
+public:
+	RateLimiter(long rate) : UpdateRate(rate) {}
+
+	boolean ready() {
+		long timeNow = millis();
+		if (timeNow - lastUpdate >= UpdateRate) {
+			lastUpdate = timeNow;
+			return true;
+		}
+		return false;
+	}
+
+	void reset() {
+		lastUpdate = millis();
+	}
+
+	const long UpdateRate = 0;  // Rate limit, in ms
+private:
+	long lastUpdate = 0;
+};
+
+// Rate limit functions, all times in milliseconds (ms)
+RateLimiter pollRate(4);  // Controller update rate
+RateLimiter reconnectRate(500);  // Controller reconnect rate
+RateLimiter fxTimeout(1200);  // Timeout for the fx tracker to be zero'd
 
 #define MAIN_TABLE right
 
@@ -75,8 +96,12 @@ DJTurntableController dj;
 DJTurntableController::TurntableExpansion * mainTable = &dj.MAIN_TABLE;
 DJTurntableController::TurntableExpansion * altTable = &dj.ALT_TABLE;
 
+DJTurntableController::EffectRollover fx(dj);
+int16_t fxTotal = 0;
+
 button fire(MOUSE_LEFT, MOUSE);
 button boop(MOUSE_RIGHT, MOUSE);
+button reload('r');
 
 button ultimate('q');
 button amp('e');
@@ -110,16 +135,8 @@ void setup() {
 }
 
 void loop() {
-	long t = millis();
-	if (t - lastUpdate >= UpdateRate) {
-		lastUpdate = t;
-		if (dj.update()) {
-			djController();
-		}
-		else {
-			dj.reconnect();
-			delay(250);
-		}
+	if (controllerReady()) {
+		djController();
 	}
 }
 
@@ -147,7 +164,7 @@ void djController() {
 		else {
 			aiming(dj.turntable(), 0);
 		}
-		
+
 		// Movement
 		jump.press(dj.buttonRed());
 
@@ -156,18 +173,23 @@ void djController() {
 		boop.press(dj.buttonBlue());
 	}
 
-
 	// --Base Station Abilities--
 	// Movement
 	joyWASD(dj.joyX(), dj.joyY());
 
+	// Weapons
+	reload.press(effectChange() && fxTotal < 0);
+
 	// Abilities
 	ultimate.press(dj.buttonEuphoria());
-	amp.press(effectChange());
+	amp.press(effectChange() && fxTotal > 0);
 	crossfade.press(dj.crossfadeSlider() > 1);
 
 	// Fun stuff!
 	emotes.press(dj.buttonPlus());
+
+	// --Cleanup--
+	resetEffect();
 }
 
 void aiming(int8_t xIn, int8_t yIn) {
@@ -205,24 +227,70 @@ void joyWASD(uint8_t x, uint8_t y) {
 }
 
 boolean effectChange() {
-	static long lastTrigger = 0;
+	const int8_t FxThreshold = 10;  // ~1/3rd of a revolution
+	const int8_t MaxChange = 5;
 
-	const uint8_t triggerLevel = 17;
-	static boolean effectTriggered = false;
+	int8_t fxChange = fx.getChange();  // Change since last update
 
-	uint8_t effectLevel = dj.effectDial();  // 0 - 31
-
-	if (effectLevel >= triggerLevel && effectTriggered == false) {
-		effectTriggered = true;
-		if (millis() - lastTrigger >= 1000) {
-			return true;
+	if (fxChange != 0) {
+		fxTimeout.reset();  // Keep alive
+	}
+	else {
+		if (fxTimeout.ready()) {
+			fxTotal = 0;
 		}
 	}
-	else if (effectLevel < triggerLevel) {
-		effectTriggered = false;
+
+	if (fxChange > MaxChange) {  // Assumed spurious
+		fxChange = 0;
+	}
+	fxTotal += fxChange;
+
+	return abs(fxTotal) >= FxThreshold;
+}
+
+void resetEffect() {  // Resets the effect total 
+	if (effectChange()) {
+		fxTotal = 0;
+	}
+}
+
+boolean controllerReady() {
+	static boolean connected = true;
+
+	// Attempt to reconnect at a regular interval
+	if (!connected && reconnectRate.ready()) {
+		connected = dj.reconnect();
+	}
+	
+	// If connected, update at a regular interval
+	if (connected && pollRate.ready()) {
+		connected = dj.update();  // New data
+		if (!connected) {
+			releaseAll();  // Something went wrong, clear current presses
+		}
+		return connected;
 	}
 
 	return false;
+}
+
+void releaseAll() {
+	fire.release();
+	boop.release();
+	reload.release();
+
+	ultimate.release();
+	amp.release();
+	crossfade.release();
+	
+	emotes.release();
+
+	moveForward.release();
+	moveLeft.release();
+	moveBack.release();
+	moveRight.release();
+	jump.release();
 }
 
 void startMultiplexer() {

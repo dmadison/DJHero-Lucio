@@ -22,6 +22,22 @@
 #include <Mouse.h>
 #include <Keyboard.h>
 
+// User Settings
+#define MAIN_TABLE right  // Main turntable in a two-turntable setup
+const int8_t HorizontalSens = 5;  // Mouse sensitivity multipler - 6 max
+const int8_t VerticalSens = 2;    // Mouse sensitivity multipler - 6 max
+
+// Tuning Options
+const uint16_t UpdateRate = 4;  // Controller polling rate, in milliseconds (ms)
+const uint16_t ConnectRate = 500;  // Rate to attempt reconnections, in ms
+const uint16_t EffectsTimeout = 1200;  // Timeout for the effects tracker, in ms
+
+// Debug Flags (uncomment to add)
+// #define DEBUG // Enable to use any prints
+// #define DEBUG_RAW
+// #define DEBUG_COMMS
+
+// ---------------------------------------------------------------------------
 enum HID_Input_Type { KEYBOARD, MOUSE };
 
 class button {
@@ -79,11 +95,9 @@ private:
 };
 
 // Rate limit functions, all times in milliseconds (ms)
-RateLimiter pollRate(4);  // Controller update rate
-RateLimiter reconnectRate(500);  // Controller reconnect rate
-RateLimiter fxTimeout(1200);  // Timeout for the fx tracker to be zero'd
-
-#define MAIN_TABLE right
+RateLimiter pollRate(UpdateRate);  // Controller update rate
+RateLimiter reconnectRate(ConnectRate);  // Controller reconnect rate
+RateLimiter fxTimeout(EffectsTimeout);  // Timeout for the fx tracker to be zero'd
 
 #if MAIN_TABLE==right
 #define ALT_TABLE left
@@ -114,11 +128,6 @@ button moveLeft('a');
 button moveBack('s');
 button moveRight('d');
 button jump(' ');
-
-// Debug Flags (uncomment to add)
-// #define DEBUG // Enable to use any prints
-// #define DEBUG_RAW
-// #define DEBUG_COMMS
 
 #ifdef DEBUG
 #define DEBUG_PRINT(x)   do {Serial.print(x);}   while(0)
@@ -211,8 +220,6 @@ void djController() {
 }
 
 void aiming(int8_t xIn, int8_t yIn) {
-	const int8_t HorizontalSens = 5;
-	const int8_t VerticalSens = 2;
 	const int8_t MaxInput = 20;  // Get rid of extranous values
 
 	static int8_t lastAim[2] = { 0, 0 };

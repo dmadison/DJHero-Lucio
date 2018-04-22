@@ -256,10 +256,31 @@ boolean controllerReady() {
 	
 	// If connected, update at a regular interval
 	if (connected && pollRate.ready()) {
-		return connected = dj.update();
+		connected = dj.update();  // New data
+		if (!connected) {
+			releaseAll();  // Something went wrong, clear current presses
+		}
+		return connected;
 	}
 
 	return false;
+}
+
+void releaseAll() {
+	fire.release();
+	boop.release();
+
+	ultimate.release();
+	amp.release();
+	crossfade.release();
+	
+	emotes.release();
+
+	moveForward.release();
+	moveLeft.release();
+	moveBack.release();
+	moveRight.release();
+	jump.release();
 }
 
 void startMultiplexer() {

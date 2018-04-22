@@ -104,6 +104,9 @@ DJTurntableController dj;
 DJTurntableController::TurntableExpansion * mainTable = &dj.MAIN_TABLE;
 DJTurntableController::TurntableExpansion * altTable = &dj.ALT_TABLE;
 
+DJTurntableController::EffectRollover fx(dj);
+int16_t fxTotal = 0;
+
 button fire(MOUSE_LEFT, MOUSE);
 button boop(MOUSE_RIGHT, MOUSE);
 
@@ -177,7 +180,6 @@ void djController() {
 		boop.press(dj.buttonBlue());
 	}
 
-
 	// --Base Station Abilities--
 	// Movement
 	joyWASD(dj.joyX(), dj.joyY());
@@ -226,23 +228,20 @@ void joyWASD(uint8_t x, uint8_t y) {
 }
 
 boolean effectChange() {
-	static long lastTrigger = 0;
+	const int8_t FxThreshold = 10;  // ~1/3rd of a revolution
+	const int8_t MaxChange = 5;
 
-	const uint8_t triggerLevel = 17;
-	static boolean effectTriggered = false;
+	int8_t fxChange = fx.getChange();  // Change since last update
 
-	uint8_t effectLevel = dj.effectDial();  // 0 - 31
-
-	if (effectLevel >= triggerLevel && effectTriggered == false) {
-		effectTriggered = true;
-		if (millis() - lastTrigger >= 1000) {
-			return true;
-		}
+	if (fxChange > MaxChange) {  // Assumed spurious
+		fxChange = 0;
 	}
-	else if (effectLevel < triggerLevel) {
-		effectTriggered = false;
-	}
+	fxTotal += fxChange;
 
+	if (abs(fxTotal) >= FxThreshold) {
+		fxTotal = 0;  // Reset
+		return true;
+	}
 	return false;
 }
 

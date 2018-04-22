@@ -61,8 +61,29 @@ private:
 	boolean pressed = 0;
 };
 
-const long UpdateRate = 4;  // Update frequency in ms
-long lastUpdate = 0;
+class RateLimiter {
+public:
+	RateLimiter(long rate) : UpdateRate(rate) {}
+
+	boolean ready() {
+		long timeNow = millis();
+		if (timeNow - lastUpdate >= UpdateRate) {
+			lastUpdate = timeNow;
+			return true;
+		}
+		return false;
+	}
+
+	void reset() {
+		lastUpdate = millis();
+	}
+
+	const long UpdateRate = 0;  // Rate limit, in ms
+private:
+	long lastUpdate = 0;
+};
+
+RateLimiter pollRate(4);  // Controller update frequency, in ms
 
 #define MAIN_TABLE right
 
@@ -112,9 +133,7 @@ void setup() {
 }
 
 void loop() {
-	long t = millis();
-	if (t - lastUpdate >= UpdateRate) {
-		lastUpdate = t;
+	if (pollRate.ready()) {
 		if (dj.update()) {
 			djController();
 		}

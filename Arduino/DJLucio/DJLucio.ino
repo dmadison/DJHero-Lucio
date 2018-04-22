@@ -118,6 +118,7 @@ button jump(' ');
 // Debug Flags (uncomment to add)
 // #define DEBUG // Enable to use any prints
 // #define DEBUG_RAW
+// #define DEBUG_COMMS
 
 #ifdef DEBUG
 #define DEBUG_PRINT(x)   do {Serial.print(x);}   while(0)
@@ -126,6 +127,8 @@ button jump(' ');
 #define DEBUG_PRINT(x)
 #define DEBUG_PRINTLN(x)
 #endif
+
+#define D_COMMS(x) DEBUG_PRINTLN(x)
 
 void setup() {
 	#ifdef DEBUG
@@ -276,6 +279,7 @@ boolean controllerReady() {
 	// Attempt to reconnect at a regular interval
 	if (!connected && reconnectRate.ready()) {
 		connected = dj.reconnect();
+		D_COMMS("Attempting to reconnect");
 	}
 	
 	// If connected, update at a regular interval
@@ -283,8 +287,10 @@ boolean controllerReady() {
 		connected = dj.update();  // New data
 		if (!connected) {
 			releaseAll();  // Something went wrong, clear current presses
+			D_COMMS("Bad update! Must reconnect");
 		}
 		else {
+			D_COMMS("Successul update!");
 			#ifdef DEBUG_RAW
 			dj.printDebug();
 			#endif

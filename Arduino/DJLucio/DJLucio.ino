@@ -109,6 +109,7 @@ int16_t fxTotal = 0;
 
 button fire(MOUSE_LEFT, MOUSE);
 button boop(MOUSE_RIGHT, MOUSE);
+button reload('r');
 
 button ultimate('q');
 button amp('e');
@@ -171,7 +172,7 @@ void djController() {
 		else {
 			aiming(dj.turntable(), 0);
 		}
-		
+
 		// Movement
 		jump.press(dj.buttonRed());
 
@@ -184,9 +185,12 @@ void djController() {
 	// Movement
 	joyWASD(dj.joyX(), dj.joyY());
 
+	// Weapons
+	reload.press(effectChange() && fxTotal < 0);
+
 	// Abilities
 	ultimate.press(dj.buttonEuphoria());
-	amp.press(effectChange());
+	amp.press(effectChange() && fxTotal > 0);
 	crossfade.press(dj.crossfadeSlider() > 1);
 
 	// Fun stuff!
@@ -273,6 +277,7 @@ boolean controllerReady() {
 void releaseAll() {
 	fire.release();
 	boop.release();
+	reload.release();
 
 	ultimate.release();
 	amp.release();

@@ -22,15 +22,6 @@
 #include <Mouse.h>
 #include <Keyboard.h>
 
-// In-game sensitivity of 6.5
-
-/* To-do:
-	#1: Support both turntables
-	#2: Fix the effect dial so it's more reliable
-	#3: Better / smoother aiming, probably with floats
-	-----(Also linked to sensitivity)
-*/
-
 enum HID_Input_Type { KEYBOARD, MOUSE };
 
 class button {

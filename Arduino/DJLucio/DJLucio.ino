@@ -97,11 +97,7 @@ private:
 
 class EffectHandler {
 public:
-	EffectHandler(DJTurntableController &dj, int8_t thresh) : fx(dj), Threshold(thresh){}
-
-	boolean changed() {
-		return changed(Threshold);
-	}
+	EffectHandler(DJTurntableController &dj) : fx(dj) {}
 
 	boolean changed(uint8_t threshold) {
 		return abs(total) >= threshold;
@@ -131,9 +127,7 @@ public:
 	}
 
 	void reset() {
-		if (changed()) {
-			total = 0;
-		}
+		total = 0;
 	}
 
 private:
@@ -171,7 +165,7 @@ button jump(' ');
 DJTurntableController::TurntableExpansion * mainTable = &dj.MAIN_TABLE;
 DJTurntableController::TurntableExpansion * altTable = &dj.ALT_TABLE;
 
-EffectHandler fx(dj, EffectThreshold);
+EffectHandler fx(dj);
 
 RateLimiter pollRate(UpdateRate);  // Controller update rate
 RateLimiter reconnectRate(ConnectRate);  // Controller reconnect rate
@@ -256,18 +250,20 @@ void djController() {
 	joyWASD(dj.joyX(), dj.joyY());
 
 	// Weapons
-	reload.press(fx.changed() && fx.getTotal() < 0);
+	reload.press(fx.changed(EffectThreshold) && fx.getTotal() < 0);
 
 	// Abilities
 	ultimate.press(dj.buttonEuphoria());
-	amp.press(fx.changed() && fx.getTotal() > 0);
+	amp.press(fx.changed(EffectThreshold) && fx.getTotal() > 0);
 	crossfade.press(dj.crossfadeSlider() > 1);
 
 	// Fun stuff!
 	emotes.press(dj.buttonPlus());
 
 	// --Cleanup--
-	fx.reset();
+	if (fx.changed(EffectThreshold)) {
+		fx.reset();  // Already used abilities, reset to 0
+	}
 }
 
 void aiming(int8_t xIn, int8_t yIn) {

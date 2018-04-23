@@ -30,6 +30,7 @@ const int8_t VerticalSens = 2;    // Mouse sensitivity multipler - 6 max
 // Tuning Options
 const uint16_t UpdateRate = 4;  // Controller polling rate, in milliseconds (ms)
 const uint16_t ConnectRate = 500;  // Rate to attempt reconnections, in ms
+const uint8_t  EffectThreshold = 10;  // Threshold to trigger abilities from the fx dial, 10 = 1/3rd of a revolution
 const uint16_t EffectsTimeout = 1200;  // Timeout for the effects tracker, in ms
 
 // Debug Flags (uncomment to add)
@@ -94,6 +95,53 @@ private:
 	long lastUpdate = 0;
 };
 
+class EffectHandler {
+public:
+	EffectHandler(DJTurntableController &dj, int8_t thresh) : fx(dj), Threshold(thresh){}
+
+	boolean changed() {
+		return changed(Threshold);
+	}
+
+	boolean changed(uint8_t threshold) {
+		const uint8_t MaxChange = 5;
+
+		int8_t fxChange = fx.getChange();  // Change since last update
+
+		// Check inactivity timer
+		if (fxChange != 0) {
+			timeout.reset();  // Keep alive
+		}
+		else if (timeout.ready()) {
+			total = 0;
+		}
+
+		if (abs(fxChange) > MaxChange) {  // Assumed spurious
+			fxChange = 0;
+		}
+		total += fxChange;
+
+		return abs(total) >= threshold;
+	}
+
+	int16_t getTotal() {
+		return total;
+	}
+
+	void reset() {
+		if (changed()) {
+			total = 0;
+		}
+	}
+
+private:
+	DJTurntableController::EffectRollover fx;
+	RateLimiter timeout = RateLimiter(EffectsTimeout);  // Timeout for the fx tracker to be zero'd
+
+	const uint8_t Threshold = 0;
+	int16_t total = 0;
+};
+
 DJTurntableController dj;
 
 button fire(MOUSE_LEFT, MOUSE);
@@ -121,12 +169,10 @@ button jump(' ');
 DJTurntableController::TurntableExpansion * mainTable = &dj.MAIN_TABLE;
 DJTurntableController::TurntableExpansion * altTable = &dj.ALT_TABLE;
 
-DJTurntableController::EffectRollover fx(dj);
-int16_t fxTotal = 0;
+EffectHandler fx(dj, EffectThreshold);
 
 RateLimiter pollRate(UpdateRate);  // Controller update rate
 RateLimiter reconnectRate(ConnectRate);  // Controller reconnect rate
-RateLimiter fxTimeout(EffectsTimeout);  // Timeout for the fx tracker to be zero'd
 
 const uint8_t SafetyPin = 9;
 
@@ -206,18 +252,18 @@ void djController() {
 	joyWASD(dj.joyX(), dj.joyY());
 
 	// Weapons
-	reload.press(effectChange() && fxTotal < 0);
+	reload.press(fx.changed() && fx.getTotal() < 0);
 
 	// Abilities
 	ultimate.press(dj.buttonEuphoria());
-	amp.press(effectChange() && fxTotal > 0);
+	amp.press(fx.changed() && fx.getTotal() > 0);
 	crossfade.press(dj.crossfadeSlider() > 1);
 
 	// Fun stuff!
 	emotes.press(dj.buttonPlus());
 
 	// --Cleanup--
-	resetEffect();
+	fx.reset();
 }
 
 void aiming(int8_t xIn, int8_t yIn) {
@@ -249,35 +295,6 @@ void joyWASD(uint8_t x, uint8_t y) {
 
 	moveForward.press(y > JoyCenter + JoyDeadzone);
 	moveBack.press(y < JoyCenter - JoyDeadzone);
-}
-
-boolean effectChange() {
-	const int8_t FxThreshold = 10;  // ~1/3rd of a revolution
-	const int8_t MaxChange = 5;
-
-	int8_t fxChange = fx.getChange();  // Change since last update
-
-	if (fxChange != 0) {
-		fxTimeout.reset();  // Keep alive
-	}
-	else {
-		if (fxTimeout.ready()) {
-			fxTotal = 0;
-		}
-	}
-
-	if (fxChange > MaxChange) {  // Assumed spurious
-		fxChange = 0;
-	}
-	fxTotal += fxChange;
-
-	return abs(fxTotal) >= FxThreshold;
-}
-
-void resetEffect() {  // Resets the effect total 
-	if (effectChange()) {
-		fxTotal = 0;
-	}
 }
 
 boolean controllerReady() {

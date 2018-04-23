@@ -104,6 +104,10 @@ public:
 	}
 
 	boolean changed(uint8_t threshold) {
+		return abs(total) >= threshold;
+	}
+
+	void update() {
 		const uint8_t MaxChange = 5;
 
 		int8_t fxChange = fx.getChange();  // Change since last update
@@ -120,8 +124,6 @@ public:
 			fxChange = 0;
 		}
 		total += fxChange;
-
-		return abs(total) >= threshold;
 	}
 
 	int16_t getTotal() {
@@ -248,6 +250,8 @@ void djController() {
 	}
 
 	// --Base Station Abilities--
+	fx.update();
+
 	// Movement
 	joyWASD(dj.joyX(), dj.joyY());
 

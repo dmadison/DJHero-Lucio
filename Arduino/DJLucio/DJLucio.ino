@@ -92,7 +92,7 @@ void setup() {
 		for (;;);  // Safety loop!
 	}
 
-	Wire.begin();
+	dj.begin();
 	startMultiplexer();
 
 	while (!dj.connect()) {

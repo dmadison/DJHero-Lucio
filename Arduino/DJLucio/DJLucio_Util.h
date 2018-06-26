@@ -87,7 +87,10 @@ public:
 	RateLimiter(long rate) : UpdateRate(rate) {}
 
 	boolean ready() {
-		long timeNow = millis();
+		return ready(millis());
+	}
+
+	boolean ready(long timeNow) {
 		if (timeNow - lastUpdate >= UpdateRate) {
 			lastUpdate = timeNow;
 			return true;

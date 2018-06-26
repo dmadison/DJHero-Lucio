@@ -21,6 +21,16 @@
 #ifndef DJLucio_Util_h
 #define DJLucio_Util_h
 
+#ifdef DEBUG
+#define DEBUG_PRINT(x)   do {Serial.print(x);}   while(0)
+#define DEBUG_PRINTLN(x) do {Serial.println(x);} while(0)
+#else
+#define DEBUG_PRINT(x)
+#define DEBUG_PRINTLN(x)
+#endif
+
+#define D_COMMS(x) DEBUG_PRINTLN(x)
+
 #if MAIN_TABLE==right
 #define ALT_TABLE left
 #elif MAIN_TABLE==left

@@ -70,16 +70,6 @@ RateLimiter reconnectRate(ConnectRate);  // Controller reconnect rate
 
 const uint8_t SafetyPin = 9;
 
-#ifdef DEBUG
-#define DEBUG_PRINT(x)   do {Serial.print(x);}   while(0)
-#define DEBUG_PRINTLN(x) do {Serial.println(x);} while(0)
-#else
-#define DEBUG_PRINT(x)
-#define DEBUG_PRINTLN(x)
-#endif
-
-#define D_COMMS(x) DEBUG_PRINTLN(x)
-
 void setup() {
 	#ifdef DEBUG
 	Serial.begin(115200);

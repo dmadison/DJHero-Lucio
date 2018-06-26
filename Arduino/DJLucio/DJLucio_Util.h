@@ -71,6 +71,7 @@ private:
 	}
 };
 
+// RateLimiter: Simple timekeeper that returns 'true' if X time has passed
 class RateLimiter {
 public:
 	RateLimiter(long rate) : UpdateRate(rate) {}

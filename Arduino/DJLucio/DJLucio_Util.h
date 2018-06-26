@@ -159,14 +159,16 @@ public:
 	// Automatically connects the controller, checks if it's ready for a new update, and 
 	// returns 'true' if there is new data to process.
 	boolean isReady() {
+		long timeNow = millis();
+
 		// Attempt to reconnect at a regular interval
-		if (!connected && reconnectRate.ready()) {
+		if (!connected && reconnectRate.ready(timeNow)) {
 			connected = controller.reconnect();
 			D_COMMS("Attempting to reconnect");
 		}
 
 		// If connected, update at a regular interval
-		if (connected && pollRate.ready()) {
+		if (connected && pollRate.ready(timeNow)) {
 			connected = controller.update();  // New data
 			if (!connected) {
 				releaseAll();  // Something went wrong, clear current presses

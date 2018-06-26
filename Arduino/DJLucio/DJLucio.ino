@@ -64,9 +64,11 @@ DJTurntableController::TurntableExpansion * mainTable = &dj.MAIN_TABLE;
 DJTurntableController::TurntableExpansion * altTable = &dj.ALT_TABLE;
 
 EffectHandler fx(dj);
-ConnectionHelper controller(dj, UpdateRate, ConnectRate);
 
+const uint8_t DetectPin = 4;
 const uint8_t SafetyPin = 9;
+
+ConnectionHelper controller(dj, DetectPin, UpdateRate, ConnectRate);
 
 
 void setup() {

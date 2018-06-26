@@ -153,13 +153,23 @@ private:
 // ConnectionHelper: Keeps track of the controller's 'connected' state, and auto-updating control data
 class ConnectionHelper {
 public:
+	// Constructor for NO controller-detect pin
 	ConnectionHelper(ExtensionController &con, long pollTime, long reconnectTime) :
-		controller(con), pollRate(pollTime), reconnectRate(reconnectTime) {}
+		ConnectionHelper(con, 0xFF, pollTime, reconnectTime) {}
+
+	// Constructor for controller-detect pin
+	ConnectionHelper(ExtensionController &con, uint8_t cdPin, long pollTime, long reconnectTime) :
+		controller(con), DetectPin(cdPin), pollRate(pollTime), reconnectRate(reconnectTime) {}
 
 	// Automatically connects the controller, checks if it's ready for a new update, and 
 	// returns 'true' if there is new data to process.
 	boolean isReady() {
 		long timeNow = millis();
+
+		if (!controllerDetected()) {
+			D_COMMS("Controller not detected (check your connections)");
+			return connected = false;
+		}
 
 		// Attempt to reconnect at a regular interval
 		if (!connected && reconnectRate.ready(timeNow)) {
@@ -191,7 +201,15 @@ public:
 	}
 
 private:
+	boolean controllerDetected() {
+		if (DetectPin == 0xFF) {  // Set as no pin, assume always connected
+			return true;
+		}
+		return digitalRead(DetectPin);
+	}
+
 	ExtensionController & controller;
+	const uint8_t DetectPin;
 
 	RateLimiter pollRate;
 	RateLimiter reconnectRate;

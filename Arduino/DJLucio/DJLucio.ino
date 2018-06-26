@@ -64,11 +64,10 @@ DJTurntableController::TurntableExpansion * mainTable = &dj.MAIN_TABLE;
 DJTurntableController::TurntableExpansion * altTable = &dj.ALT_TABLE;
 
 EffectHandler fx(dj);
-
-RateLimiter pollRate(UpdateRate);  // Controller update rate
-RateLimiter reconnectRate(ConnectRate);  // Controller reconnect rate
+ConnectionHelper controller(dj, UpdateRate, ConnectRate);
 
 const uint8_t SafetyPin = 9;
+
 
 void setup() {
 	#ifdef DEBUG
@@ -85,7 +84,7 @@ void setup() {
 	dj.begin();
 	startMultiplexer();
 
-	while (!dj.connect()) {
+	while (!controller.isReady()) {
 		DEBUG_PRINTLN(F("Couldn't connect to turntable!"));
 		delay(500);
 	}
@@ -93,7 +92,7 @@ void setup() {
 }
 
 void loop() {
-	if (controllerReady()) {
+	if (controller.isReady()) {
 		djController();
 	}
 }
@@ -183,34 +182,6 @@ void joyWASD(uint8_t x, uint8_t y) {
 
 	moveForward.press(y > JoyCenter + JoyDeadzone);
 	moveBack.press(y < JoyCenter - JoyDeadzone);
-}
-
-boolean controllerReady() {
-	static boolean connected = true;
-
-	// Attempt to reconnect at a regular interval
-	if (!connected && reconnectRate.ready()) {
-		connected = dj.reconnect();
-		D_COMMS("Attempting to reconnect");
-	}
-	
-	// If connected, update at a regular interval
-	if (connected && pollRate.ready()) {
-		connected = dj.update();  // New data
-		if (!connected) {
-			releaseAll();  // Something went wrong, clear current presses
-			D_COMMS("Bad update! Must reconnect");
-		}
-		else {
-			D_COMMS("Successul update!");
-			#ifdef DEBUG_RAW
-			dj.printDebug();
-			#endif
-		}
-		return connected;
-	}
-
-	return false;
 }
 
 void releaseAll() {

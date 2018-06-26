@@ -147,4 +147,51 @@ private:
 	int16_t total = 0;
 };
 
+// ConnectionHelper: Keeps track of the controller's 'connected' state, and auto-updating control data
+class ConnectionHelper {
+public:
+	ConnectionHelper(ExtensionController &con, long pollTime, long reconnectTime) :
+		controller(con), pollRate(pollTime), reconnectRate(reconnectTime) {}
+
+	// Automatically connects the controller, checks if it's ready for a new update, and 
+	// returns 'true' if there is new data to process.
+	boolean isReady() {
+		// Attempt to reconnect at a regular interval
+		if (!connected && reconnectRate.ready()) {
+			connected = controller.reconnect();
+			D_COMMS("Attempting to reconnect");
+		}
+
+		// If connected, update at a regular interval
+		if (connected && pollRate.ready()) {
+			connected = controller.update();  // New data
+			if (!connected) {
+				releaseAll();  // Something went wrong, clear current presses
+				D_COMMS("Bad update! Must reconnect");
+			}
+			else {
+				D_COMMS("Successul update!");
+				#ifdef DEBUG_RAW
+				dj.printDebug();
+				#endif
+			}
+			return connected;
+		}
+
+		return false;
+	}
+
+	boolean isConnected() const {
+		return connected;
+	}
+
+private:
+	ExtensionController & controller;
+
+	RateLimiter pollRate;
+	RateLimiter reconnectRate;
+
+	boolean connected = false;
+};
+
 #endif

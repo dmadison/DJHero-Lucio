@@ -93,6 +93,7 @@ private:
 	long lastUpdate = 0;
 };
 
+// EffectHandler: Keeps track of changes to the turntable's "effect dial"
 class EffectHandler {
 public:
 	EffectHandler(DJTurntableController &dj) : fx(dj) {}
@@ -106,7 +107,7 @@ public:
 
 		int8_t fxChange = fx.getChange();  // Change since last update
 
-										   // Check inactivity timer
+		 // Check inactivity timer
 		if (fxChange != 0) {
 			timeout.reset();  // Keep alive
 		}
@@ -132,7 +133,6 @@ private:
 	DJTurntableController::EffectRollover fx;
 	RateLimiter timeout = RateLimiter(EffectsTimeout);  // Timeout for the fx tracker to be zero'd
 
-	const uint8_t Threshold = 0;
 	int16_t total = 0;
 };
 

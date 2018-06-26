@@ -44,21 +44,21 @@ const uint16_t EffectsTimeout = 1200;  // Timeout for the effects tracker, in ms
 
 DJTurntableController dj;
 
-button fire(MOUSE_LEFT, MOUSE);
-button boop(MOUSE_RIGHT, MOUSE);
-button reload('r');
+MouseButton fire(MOUSE_LEFT);
+MouseButton boop(MOUSE_RIGHT);
+KeyboardButton reload('r');
 
-button ultimate('q');
-button amp('e');
-button crossfade(KEY_LEFT_SHIFT);
+KeyboardButton ultimate('q');
+KeyboardButton amp('e');
+KeyboardButton crossfade(KEY_LEFT_SHIFT);
 
-button emotes('c');
+KeyboardButton emotes('c');
 
-button moveForward('w');
-button moveLeft('a');
-button moveBack('s');
-button moveRight('d');
-button jump(' ');
+KeyboardButton moveForward('w');
+KeyboardButton moveLeft('a');
+KeyboardButton moveBack('s');
+KeyboardButton moveRight('d');
+KeyboardButton jump(' ');
 
 DJTurntableController::TurntableExpansion * mainTable = &dj.MAIN_TABLE;
 DJTurntableController::TurntableExpansion * altTable = &dj.ALT_TABLE;

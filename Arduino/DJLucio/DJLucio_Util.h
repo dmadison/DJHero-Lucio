@@ -27,29 +27,17 @@
 #define ALT_TABLE right
 #endif
 
-enum HID_Input_Type { KEYBOARD, MOUSE };
-
-class button {
+// HID_Button: Handles HID button state to prevent input spam
+class HID_Button {
 public:
-	const char key;
-	const HID_Input_Type lib;
-
-	button(char k, HID_Input_Type t = KEYBOARD) : key(k), lib(t) {}
+	HID_Button(char k) : key(k) {}
 
 	void press(boolean state = true) {
 		if (state == pressed) {
 			return; // Nothing to see here, folks
 		}
 
-		switch (lib) {
-		case KEYBOARD:
-			state ? Keyboard.press(key) : Keyboard.release(key);
-			break;
-		case MOUSE:
-			state ? Mouse.press(key) : Mouse.release(key);
-			break;
-		}
-
+		sendState(state);
 		pressed = state;
 	}
 
@@ -57,8 +45,30 @@ public:
 		press(false);
 	}
 
+	const char key;
 private:
+	virtual void sendState(boolean state) = 0;
 	boolean pressed = 0;
+};
+
+// HID_Button: Sending mouse inputs
+class MouseButton : public HID_Button {
+public:
+	using HID_Button::HID_Button;
+private:
+	void sendState(boolean state) {
+		state ? Mouse.press(key) : Mouse.release(key);
+	}
+};
+
+// HID_Button: Sending keyboard inputs
+class KeyboardButton : public HID_Button {
+public:
+	using HID_Button::HID_Button;
+private:
+	void sendState(boolean state) {
+		state ? Keyboard.press(key) : Keyboard.release(key);
+	}
 };
 
 class RateLimiter {

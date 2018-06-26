@@ -39,104 +39,8 @@ const uint16_t EffectsTimeout = 1200;  // Timeout for the effects tracker, in ms
 // #define DEBUG_COMMS
 
 // ---------------------------------------------------------------------------
-enum HID_Input_Type { KEYBOARD, MOUSE };
 
-class button {
-public:
-	const char key;
-	const HID_Input_Type lib;
-
-	button(char k, HID_Input_Type t = KEYBOARD) : key(k), lib(t) {}
-
-	void press(boolean state = true) {
-		if (state == pressed) {
-			return; // Nothing to see here, folks
-		}
-
-		switch (lib) {
-		case KEYBOARD:
-			state ? Keyboard.press(key) : Keyboard.release(key);
-			break;
-		case MOUSE:
-			state ? Mouse.press(key) : Mouse.release(key);
-			break;
-		}
-
-		pressed = state;
-	}
-
-	void release() {
-		press(false);
-	}
-
-private:
-	boolean pressed = 0;
-};
-
-class RateLimiter {
-public:
-	RateLimiter(long rate) : UpdateRate(rate) {}
-
-	boolean ready() {
-		long timeNow = millis();
-		if (timeNow - lastUpdate >= UpdateRate) {
-			lastUpdate = timeNow;
-			return true;
-		}
-		return false;
-	}
-
-	void reset() {
-		lastUpdate = millis();
-	}
-
-	const long UpdateRate = 0;  // Rate limit, in ms
-private:
-	long lastUpdate = 0;
-};
-
-class EffectHandler {
-public:
-	EffectHandler(DJTurntableController &dj) : fx(dj) {}
-
-	boolean changed(uint8_t threshold) {
-		return abs(total) >= threshold;
-	}
-
-	void update() {
-		const uint8_t MaxChange = 5;
-
-		int8_t fxChange = fx.getChange();  // Change since last update
-
-		// Check inactivity timer
-		if (fxChange != 0) {
-			timeout.reset();  // Keep alive
-		}
-		else if (timeout.ready()) {
-			total = 0;
-		}
-
-		if (abs(fxChange) > MaxChange) {  // Assumed spurious
-			fxChange = 0;
-		}
-		total += fxChange;
-	}
-
-	int16_t getTotal() {
-		return total;
-	}
-
-	void reset() {
-		total = 0;
-	}
-
-private:
-	DJTurntableController::EffectRollover fx;
-	RateLimiter timeout = RateLimiter(EffectsTimeout);  // Timeout for the fx tracker to be zero'd
-
-	const uint8_t Threshold = 0;
-	int16_t total = 0;
-};
+#include "DJLucio_Util.h"  // Utility classes
 
 DJTurntableController dj;
 
@@ -155,12 +59,6 @@ button moveLeft('a');
 button moveBack('s');
 button moveRight('d');
 button jump(' ');
-
-#if MAIN_TABLE==right
-#define ALT_TABLE left
-#elif MAIN_TABLE==left
-#define ALT_TABLE right
-#endif
 
 DJTurntableController::TurntableExpansion * mainTable = &dj.MAIN_TABLE;
 DJTurntableController::TurntableExpansion * altTable = &dj.ALT_TABLE;

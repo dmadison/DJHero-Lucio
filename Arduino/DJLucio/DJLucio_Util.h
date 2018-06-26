@@ -164,7 +164,7 @@ public:
 	// Automatically connects the controller, checks if it's ready for a new update, and 
 	// returns 'true' if there is new data to process.
 	boolean isReady() {
-		if (isConnected() && pollRate.ready()) {
+		if (pollRate.ready() && isConnected()) {
 			connected = controller.update();  // New data
 			if (!connected) {
 				releaseAll();  // Something went wrong, clear current presses

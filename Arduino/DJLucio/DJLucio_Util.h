@@ -29,7 +29,11 @@
 #define DEBUG_PRINTLN(x)
 #endif
 
+#ifdef DEBUG_COMMS
 #define D_COMMS(x) DEBUG_PRINTLN(x)
+#else
+#define D_COMMS(x)
+#endif
 
 #if MAIN_TABLE==right
 #define ALT_TABLE left

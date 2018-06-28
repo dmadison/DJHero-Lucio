@@ -58,7 +58,53 @@
 // HID_Button: Handles HID button state to prevent input spam
 class HID_Button {
 public:
-	HID_Button(char k) : key(k) {}
+	HID_Button(char k) : key(k) {
+		// If linked list is empty, set both head and tail
+		if (head == nullptr) {
+			head = this;
+			tail = this;
+		}
+		// If linked list is *not* empty, set the 'next' ptr of the tail
+		// and update the tail
+		else {
+			tail->next = this;
+			tail = this;
+		}
+	}
+
+	~HID_Button() {
+		if (this == head) {
+			// Option #1: Only element in the list
+			if (this == tail) {
+				head = nullptr;
+				tail = nullptr;  // List is now empty
+			}
+			// Option #2: First element in the list,
+			// but not *only* element
+			else {
+				head = next;  // Set head to next, and we're done
+			}
+			return;
+		}
+
+		// Option #3: Somewhere else in the list.
+		// Iterate through to find it
+
+		HID_Button * ptr = head;
+
+		while (ptr != nullptr) {
+			if (ptr->next == this) {  // FOUND!
+				ptr->next = next;  // Set the previous "next" as this entry's "next" (skip this object)
+				break;  // Stop searching
+			}
+			ptr = ptr->next;  // Not found. Next entry...
+		}
+
+		// Option #4: Last entry in the list
+		if (this == tail) {
+			tail = ptr;  // Set the tail as the previous entry
+		}
+	}
 
 	void press(boolean state = true) {
 		if (state == pressed) {
@@ -73,11 +119,28 @@ public:
 		press(false);
 	}
 
+	static void releaseAll() {  // Release all buttons, using the linked list
+		HID_Button * ptr = head;
+
+		while (ptr != nullptr) {
+			ptr->release();
+			ptr = ptr->next;
+		}
+	}
+
 	const unsigned char key;
 private:
+	static HID_Button * head;
+	static HID_Button * tail;
+
 	virtual void sendState(boolean state) = 0;
 	boolean pressed = 0;
+	HID_Button * next = nullptr;
 };
+
+// Allocate space for the static pointers
+HID_Button * HID_Button::head = nullptr;
+HID_Button * HID_Button::tail = nullptr;
 
 // HID_Button: Sending mouse inputs
 class MouseButton : public HID_Button {
@@ -264,7 +327,7 @@ public:
 		if (pollRate.ready() && isConnected()) {
 			connected = controller.update();  // New data
 			if (!connected) {
-				releaseAll();  // Something went wrong, clear current presses
+				HID_Button::releaseAll();  // Something went wrong, clear current pressed buttons
 				D_COMMS("Bad update! Must reconnect");
 			}
 			else {

@@ -189,24 +189,6 @@ void joyWASD(uint8_t x, uint8_t y) {
 	moveBack.press(y < JoyCenter - JoyDeadzone);
 }
 
-void releaseAll() {
-	fire.release();
-	boop.release();
-	reload.release();
-
-	ultimate.release();
-	amp.release();
-	crossfade.release();
-	
-	emotes.release();
-
-	moveForward.release();
-	moveLeft.release();
-	moveBack.release();
-	moveRight.release();
-	jump.release();
-}
-
 void startMultiplexer() {
 	Wire.begin();
 	Wire.beginTransmission(0x70);

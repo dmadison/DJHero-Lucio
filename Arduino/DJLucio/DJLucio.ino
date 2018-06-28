@@ -73,7 +73,6 @@ const uint8_t SafetyPin = 9;
 
 ConnectionHelper controller(dj, DetectPin, UpdateRate, DetectTime, ConnectRate);
 
-
 void setup() {
 	#ifdef DEBUG
 	Serial.begin(115200);
@@ -159,7 +158,9 @@ void djController() {
 }
 
 void aiming(int8_t xIn, int8_t yIn) {
-	const int8_t MaxInput = 20;  // Get rid of extranous values
+	const int8_t MaxInput = 20;  // Ignore values above this threshold as extranous
+	static_assert(HorizontalSens * MaxInput <= 127, "Your sensitivity is too high!");  // Check for signed overflow (int8_t)
+	static_assert(VerticalSens   * MaxInput <= 127, "Your sensitivity is too high!");
 
 	static int8_t lastAim[2] = { 0, 0 };
 	int8_t * aim[2] = { &xIn, &yIn };  // Store in array for iterative access

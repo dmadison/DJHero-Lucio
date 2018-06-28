@@ -35,11 +35,11 @@ const uint8_t  EffectThreshold = 10;  // Threshold to trigger abilities from the
 const uint16_t EffectsTimeout = 1200;  // Timeout for the effects tracker, in ms
 
 // Debug Flags (uncomment to add)
-// #define DEBUG // Enable to use any prints
-// #define DEBUG_RAW
-// #define DEBUG_HID
-// #define DEBUG_COMMS
-// #define DEBUG_CONTROLDETECT
+// #define DEBUG                // Enable to use any prints
+// #define DEBUG_RAW            // See the raw data from the turntable
+// #define DEBUG_HID            // See HID inputs as they're pressed/released
+// #define DEBUG_COMMS          // Follow the controller connect and update calls
+// #define DEBUG_CONTROLDETECT  // Trace the controller detect pin functions
 
 // ---------------------------------------------------------------------------
 

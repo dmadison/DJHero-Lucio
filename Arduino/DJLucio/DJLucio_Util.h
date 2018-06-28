@@ -29,6 +29,14 @@
 #define DEBUG_PRINTLN(x)
 #endif
 
+#ifdef DEBUG_HID
+#define D_HID(x)   DEBUG_PRINT(x)
+#define D_HIDLN(x) DEBUG_PRINTLN(x)
+#else
+#define D_HID(x)
+#define D_HIDLN(x)
+#endif
+
 #ifdef DEBUG_COMMS
 #define D_COMMS(x) DEBUG_PRINTLN(x)
 #else
@@ -65,7 +73,7 @@ public:
 		press(false);
 	}
 
-	const char key;
+	const unsigned char key;
 private:
 	virtual void sendState(boolean state) = 0;
 	boolean pressed = 0;
@@ -78,6 +86,23 @@ public:
 private:
 	void sendState(boolean state) {
 		state ? Mouse.press(key) : Mouse.release(key);
+
+		#ifdef DEBUG_HID
+		DEBUG_PRINT("Mouse ");
+		switch (key) {
+			case(MOUSE_LEFT):
+				DEBUG_PRINT("left");
+				break;
+			case(MOUSE_RIGHT):
+				DEBUG_PRINT("right");
+				break;
+			case(MOUSE_MIDDLE):
+				DEBUG_PRINT("middle");
+				break;
+		}
+		DEBUG_PRINT(' ');
+		DEBUG_PRINTLN(state ? "pressed" : "released");
+		#endif
 	}
 };
 
@@ -88,6 +113,24 @@ public:
 private:
 	void sendState(boolean state) {
 		state ? Keyboard.press(key) : Keyboard.release(key);
+
+		#ifdef DEBUG_HID
+		DEBUG_PRINT("Keyboard ");
+		switch (key) {
+			case(KEY_LEFT_SHIFT):
+			case(KEY_RIGHT_SHIFT):
+				DEBUG_PRINT("shift");
+				break;
+			case(' '):
+				DEBUG_PRINT("(space)");
+				break;
+			default:
+				DEBUG_PRINT((char)key);
+				break;
+		}
+		DEBUG_PRINT(' ');
+		DEBUG_PRINTLN(state ? "pressed" : "released");
+		#endif
 	}
 };
 

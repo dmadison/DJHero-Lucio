@@ -37,6 +37,7 @@ const uint16_t EffectsTimeout = 1200;  // Timeout for the effects tracker, in ms
 // Debug Flags (uncomment to add)
 // #define DEBUG // Enable to use any prints
 // #define DEBUG_RAW
+// #define DEBUG_HID
 // #define DEBUG_COMMS
 // #define DEBUG_CONTROLDETECT
 

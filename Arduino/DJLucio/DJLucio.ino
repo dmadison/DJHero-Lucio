@@ -177,6 +177,16 @@ void aiming(int8_t xIn, int8_t yIn) {
 	}
 
 	Mouse.move(xIn * HorizontalSens, yIn * VerticalSens);
+
+	#ifdef DEBUG_HID
+	if (xIn != 0 || yIn != 0) {
+		DEBUG_PRINT("Moved the mouse {");
+		DEBUG_PRINT(xIn * HorizontalSens);
+		DEBUG_PRINT(", ");
+		DEBUG_PRINT(yIn * VerticalSens);
+		DEBUG_PRINTLN("}");
+	}
+	#endif
 }
 
 void joyWASD(uint8_t x, uint8_t y) {

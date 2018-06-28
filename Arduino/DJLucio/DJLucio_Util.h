@@ -354,10 +354,10 @@ public:
 			return connected = false;
 		}
 
-		// If not connected, attempt reconnection at regular interval
+		// If not connected, attempt connection at regular interval
 		if (!connected && reconnectRate.ready()) {
-			connected = controller.reconnect();
-			D_COMMS("Attempting to reconnect");
+			connected = controller.connect();
+			D_COMMS("Connecting to controller...");
 		}
 
 		return connected;

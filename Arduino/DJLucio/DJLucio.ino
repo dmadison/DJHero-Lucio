@@ -85,9 +85,8 @@ void setup() {
 		for (;;);  // Safety loop!
 	}
 
-	controller.begin();  // Initialize CD pin as input
-	dj.begin();  // Initialize the I2C bus
 	startMultiplexer();  // Enable the multiplexer, currently being used as a level shifter (to be removed)
+	controller.begin();  // Initialize controller bus and auto-detect
 
 	while (!controller.isReady()) {
 		DEBUG_PRINTLN(F("Couldn't connect to turntable!"));
@@ -208,6 +207,7 @@ void releaseAll() {
 }
 
 void startMultiplexer() {
+	Wire.begin();
 	Wire.beginTransmission(0x70);
 	Wire.write(1);
 	Wire.endTransmission();

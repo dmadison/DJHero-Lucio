@@ -211,7 +211,8 @@ public:
 		controller(con), detect(cdPin, cdWaitTime), pollRate(pollTime), reconnectRate(reconnectTime) {}
 
 	void begin() {
-		detect.begin();
+		detect.begin();  // Initialize CD pin as input
+		controller.begin();  // Start I2C bus
 	}
 
 	// Automatically connects the controller, checks if it's ready for a new update, and 

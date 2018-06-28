@@ -272,7 +272,9 @@ private:
 // ControllerDetect: Measures and debounces the controller's "connected" pin
 class ControllerDetect {
 public:
-	ControllerDetect(uint8_t pin, unsigned long stableWait) : Pin(pin), StableTime(stableWait) {}
+	ControllerDetect(uint8_t pin, unsigned long stableWait) : Pin(pin), StableTime(stableWait) {
+		stableSince = millis() - StableTime;
+	}
 
 	void begin() {
 		pinMode(Pin, INPUT);
@@ -308,8 +310,8 @@ private:
 	const uint8_t Pin;  // Connected pin to read from. High == connected, Low == disconnected (needs pull-down)
 	unsigned long StableTime;  // Time before the connection is considered "stable", in milliseconds
 
-	unsigned long stableSince = 0;
-	boolean lastPinState = LOW;
+	unsigned long stableSince;
+	boolean lastPinState = HIGH;  // Assume connected for first read
 };
 
 // ConnectionHelper: Keeps track of the controller's 'connected' state, and auto-updating control data

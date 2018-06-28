@@ -200,7 +200,9 @@ private:
 // RateLimiter: Simple timekeeper that returns 'true' if X time has passed
 class RateLimiter {
 public:
-	RateLimiter(unsigned long rate) : UpdateRate(rate) {}
+	RateLimiter(unsigned long rate) : UpdateRate(rate) {
+		lastUpdate = millis() - rate;  // Guarantee 'ready' on first call 
+	}
 
 	boolean ready() {
 		return ready(millis());
@@ -220,7 +222,7 @@ public:
 
 	const unsigned long UpdateRate = 0;  // Rate limit, in ms
 private:
-	unsigned long lastUpdate = 0;
+	unsigned long lastUpdate;
 };
 
 // EffectHandler: Keeps track of changes to the turntable's "effect dial"

@@ -200,13 +200,13 @@ private:
 // RateLimiter: Simple timekeeper that returns 'true' if X time has passed
 class RateLimiter {
 public:
-	RateLimiter(long rate) : UpdateRate(rate) {}
+	RateLimiter(unsigned long rate) : UpdateRate(rate) {}
 
 	boolean ready() {
 		return ready(millis());
 	}
 
-	boolean ready(long timeNow) {
+	boolean ready(unsigned long timeNow) {
 		if (timeNow - lastUpdate >= UpdateRate) {
 			lastUpdate = timeNow;
 			return true;
@@ -218,9 +218,9 @@ public:
 		lastUpdate = millis();
 	}
 
-	const long UpdateRate = 0;  // Rate limit, in ms
+	const unsigned long UpdateRate = 0;  // Rate limit, in ms
 private:
-	long lastUpdate = 0;
+	unsigned long lastUpdate = 0;
 };
 
 // EffectHandler: Keeps track of changes to the turntable's "effect dial"
@@ -270,7 +270,7 @@ private:
 // ControllerDetect: Measures and debounces the controller's "connected" pin
 class ControllerDetect {
 public:
-	ControllerDetect(uint8_t pin, long stableWait) : Pin(pin), StableTime(stableWait) {}
+	ControllerDetect(uint8_t pin, unsigned long stableWait) : Pin(pin), StableTime(stableWait) {}
 
 	void begin() {
 		pinMode(Pin, INPUT);
@@ -313,7 +313,7 @@ private:
 // ConnectionHelper: Keeps track of the controller's 'connected' state, and auto-updating control data
 class ConnectionHelper {
 public:
-	ConnectionHelper(ExtensionController &con, uint8_t cdPin, long pollTime, long cdWaitTime, long reconnectTime) :
+	ConnectionHelper(ExtensionController &con, uint8_t cdPin, unsigned long pollTime, unsigned long cdWaitTime, unsigned long reconnectTime) :
 		controller(con), detect(cdPin, cdWaitTime), pollRate(pollTime), reconnectRate(reconnectTime) {}
 
 	void begin() {

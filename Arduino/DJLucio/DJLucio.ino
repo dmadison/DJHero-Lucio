@@ -29,6 +29,7 @@ const int8_t VerticalSens = 2;    // Mouse sensitivity multipler - 6 max
 
 // Tuning Options
 const uint16_t UpdateRate = 4;  // Controller polling rate, in milliseconds (ms)
+const uint16_t DetectTime = 1000;  // Time before a connected controller is considered stable (ms)
 const uint16_t ConnectRate = 500;  // Rate to attempt reconnections, in ms
 const uint8_t  EffectThreshold = 10;  // Threshold to trigger abilities from the fx dial, 10 = 1/3rd of a revolution
 const uint16_t EffectsTimeout = 1200;  // Timeout for the effects tracker, in ms
@@ -37,6 +38,7 @@ const uint16_t EffectsTimeout = 1200;  // Timeout for the effects tracker, in ms
 // #define DEBUG // Enable to use any prints
 // #define DEBUG_RAW
 // #define DEBUG_COMMS
+// #define DEBUG_CONTROLDETECT
 
 // ---------------------------------------------------------------------------
 
@@ -68,7 +70,7 @@ EffectHandler fx(dj);
 const uint8_t DetectPin = 4;
 const uint8_t SafetyPin = 9;
 
-ConnectionHelper controller(dj, DetectPin, UpdateRate, ConnectRate);
+ConnectionHelper controller(dj, DetectPin, UpdateRate, DetectTime, ConnectRate);
 
 
 void setup() {
@@ -83,8 +85,9 @@ void setup() {
 		for (;;);  // Safety loop!
 	}
 
-	dj.begin();
-	startMultiplexer();
+	controller.begin();  // Initialize CD pin as input
+	dj.begin();  // Initialize the I2C bus
+	startMultiplexer();  // Enable the multiplexer, currently being used as a level shifter (to be removed)
 
 	while (!controller.isReady()) {
 		DEBUG_PRINTLN(F("Couldn't connect to turntable!"));

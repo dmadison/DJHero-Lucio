@@ -35,6 +35,12 @@
 #define D_COMMS(x)
 #endif
 
+#ifdef DEBUG_CONTROLDETECT
+#define D_CD(x)   DEBUG_PRINT(x)
+#else
+#define D_CD(x)
+#endif
+
 #if MAIN_TABLE==right
 #define ALT_TABLE left
 #elif MAIN_TABLE==left
@@ -154,16 +160,59 @@ private:
 	int16_t total = 0;
 };
 
+
+// ControllerDetect: Measures and debounces the controller's "connected" pin
+class ControllerDetect {
+public:
+	ControllerDetect(uint8_t pin, long stableWait) : Pin(pin), StableTime(stableWait) {}
+
+	void begin() {
+		pinMode(Pin, INPUT);
+	}
+
+	boolean isDetected() {
+		boolean currentState = digitalRead(Pin);  // Read status of CD pin
+
+		D_CD("CD pin is ");
+		D_CD(currentState ? "HIGH " : "LOW ");
+
+		// Controller detected! (Rising edge)
+		if (currentState == HIGH) {
+			if (lastPinState == LOW) {  // This is new!
+				stableSince = millis();  // Reset the stable counter
+			}
+			else if (lastPinState == HIGH) {  // We're still connected
+				D_CD("Stable for: ");
+				D_CD(millis() - stableSince);
+				D_CD(" / ");
+				D_CD(StableTime);
+				D_CD(' ');
+			}
+		}
+
+		lastPinState = currentState;  // Save pin state for future reference
+
+		// If we've connected and have been been stable for X time, return true
+		return currentState && (millis() - stableSince >= StableTime);
+	}
+
+private:
+	const uint8_t Pin;  // Connected pin to read from. High == connected, Low == disconnected (needs pull-down)
+	unsigned long StableTime;  // Time before the connection is considered "stable", in milliseconds
+
+	unsigned long stableSince = 0;
+	boolean lastPinState = LOW;
+};
+
 // ConnectionHelper: Keeps track of the controller's 'connected' state, and auto-updating control data
 class ConnectionHelper {
 public:
-	// Constructor for NO controller-detect pin
-	ConnectionHelper(ExtensionController &con, long pollTime, long reconnectTime) :
-		ConnectionHelper(con, 0xFF, pollTime, reconnectTime) {}
+	ConnectionHelper(ExtensionController &con, uint8_t cdPin, long pollTime, long cdWaitTime, long reconnectTime) :
+		controller(con), detect(cdPin, cdWaitTime), pollRate(pollTime), reconnectRate(reconnectTime) {}
 
-	// Constructor for controller-detect pin
-	ConnectionHelper(ExtensionController &con, uint8_t cdPin, long pollTime, long reconnectTime) :
-		controller(con), DetectPin(cdPin), pollRate(pollTime), reconnectRate(reconnectTime) {}
+	void begin() {
+		detect.begin();
+	}
 
 	// Automatically connects the controller, checks if it's ready for a new update, and 
 	// returns 'true' if there is new data to process.
@@ -205,14 +254,11 @@ public:
 
 private:
 	boolean controllerDetected() {
-		if (DetectPin == 0xFF) {  // Set as no pin, assume always connected
-			return true;
-		}
-		return digitalRead(DetectPin);
+		return detect.isDetected();
 	}
 
 	ExtensionController & controller;
-	const uint8_t DetectPin;
+	ControllerDetect detect;
 
 	RateLimiter pollRate;
 	RateLimiter reconnectRate;

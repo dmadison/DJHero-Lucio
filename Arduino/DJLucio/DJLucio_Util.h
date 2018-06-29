@@ -45,8 +45,10 @@
 
 #ifdef DEBUG_CONTROLDETECT
 #define D_CD(x)   DEBUG_PRINT(x)
+#define D_CDLN(x) DEBUG_PRINTLN(x)
 #else
 #define D_CD(x)
+#define D_CDLN(x)
 #endif
 
 #if MAIN_TABLE==right
@@ -291,13 +293,11 @@ public:
 			if (lastPinState == LOW) {  // This is new!
 				stableSince = millis();  // Reset the stable counter
 			}
-			else if (lastPinState == HIGH) {  // We're still connected
-				D_CD("Stable for: ");
-				D_CD(millis() - stableSince);
-				D_CD(" / ");
-				D_CD(StableTime);
-				D_CD(' ');
-			}
+			D_CD("Stable for: ");
+			D_CD(millis() - stableSince);
+			D_CD(" / ");
+			D_CD(StableTime);
+			D_CDLN();
 		}
 
 		lastPinState = currentState;  // Save pin state for future reference

@@ -28,159 +28,50 @@ const int8_t HorizontalSens = 5;  // Mouse sensitivity multipler - 6 max
 const int8_t VerticalSens = 2;    // Mouse sensitivity multipler - 6 max
 
 // Tuning Options
-const uint16_t UpdateRate = 4;  // Controller polling rate, in milliseconds (ms)
-const uint16_t ConnectRate = 500;  // Rate to attempt reconnections, in ms
-const uint8_t  EffectThreshold = 10;  // Threshold to trigger abilities from the fx dial, 10 = 1/3rd of a revolution
-const uint16_t EffectsTimeout = 1200;  // Timeout for the effects tracker, in ms
+const unsigned long UpdateRate = 4;         // Controller polling rate, in milliseconds (ms)
+const unsigned long DetectTime = 1000;      // Time before a connected controller is considered stable (ms)
+const unsigned long ConnectRate = 500;      // Rate to attempt reconnections, in ms
+const uint8_t       EffectThreshold = 10;   // Threshold to trigger abilities from the fx dial, 10 = 1/3rd of a revolution
+const unsigned long EffectsTimeout = 1200;  // Timeout for the effects tracker, in ms
 
 // Debug Flags (uncomment to add)
-// #define DEBUG // Enable to use any prints
-// #define DEBUG_RAW
-// #define DEBUG_COMMS
+// #define DEBUG                // Enable to use any prints
+// #define DEBUG_RAW            // See the raw data from the turntable
+// #define DEBUG_HID            // See HID inputs as they're pressed/released
+// #define DEBUG_COMMS          // Follow the controller connect and update calls
+// #define DEBUG_CONTROLDETECT  // Trace the controller detect pin functions
 
 // ---------------------------------------------------------------------------
-enum HID_Input_Type { KEYBOARD, MOUSE };
 
-class button {
-public:
-	const char key;
-	const HID_Input_Type lib;
-
-	button(char k, HID_Input_Type t = KEYBOARD) : key(k), lib(t) {}
-
-	void press(boolean state = true) {
-		if (state == pressed) {
-			return; // Nothing to see here, folks
-		}
-
-		switch (lib) {
-		case KEYBOARD:
-			state ? Keyboard.press(key) : Keyboard.release(key);
-			break;
-		case MOUSE:
-			state ? Mouse.press(key) : Mouse.release(key);
-			break;
-		}
-
-		pressed = state;
-	}
-
-	void release() {
-		press(false);
-	}
-
-private:
-	boolean pressed = 0;
-};
-
-class RateLimiter {
-public:
-	RateLimiter(long rate) : UpdateRate(rate) {}
-
-	boolean ready() {
-		long timeNow = millis();
-		if (timeNow - lastUpdate >= UpdateRate) {
-			lastUpdate = timeNow;
-			return true;
-		}
-		return false;
-	}
-
-	void reset() {
-		lastUpdate = millis();
-	}
-
-	const long UpdateRate = 0;  // Rate limit, in ms
-private:
-	long lastUpdate = 0;
-};
-
-class EffectHandler {
-public:
-	EffectHandler(DJTurntableController &dj) : fx(dj) {}
-
-	boolean changed(uint8_t threshold) {
-		return abs(total) >= threshold;
-	}
-
-	void update() {
-		const uint8_t MaxChange = 5;
-
-		int8_t fxChange = fx.getChange();  // Change since last update
-
-		// Check inactivity timer
-		if (fxChange != 0) {
-			timeout.reset();  // Keep alive
-		}
-		else if (timeout.ready()) {
-			total = 0;
-		}
-
-		if (abs(fxChange) > MaxChange) {  // Assumed spurious
-			fxChange = 0;
-		}
-		total += fxChange;
-	}
-
-	int16_t getTotal() {
-		return total;
-	}
-
-	void reset() {
-		total = 0;
-	}
-
-private:
-	DJTurntableController::EffectRollover fx;
-	RateLimiter timeout = RateLimiter(EffectsTimeout);  // Timeout for the fx tracker to be zero'd
-
-	const uint8_t Threshold = 0;
-	int16_t total = 0;
-};
+#include "DJLucio_Util.h"  // Utility classes
 
 DJTurntableController dj;
 
-button fire(MOUSE_LEFT, MOUSE);
-button boop(MOUSE_RIGHT, MOUSE);
-button reload('r');
+MouseButton fire(MOUSE_LEFT);
+MouseButton boop(MOUSE_RIGHT);
+KeyboardButton reload('r');
 
-button ultimate('q');
-button amp('e');
-button crossfade(KEY_LEFT_SHIFT);
+KeyboardButton ultimate('q');
+KeyboardButton amp('e');
+KeyboardButton crossfade(KEY_LEFT_SHIFT);
 
-button emotes('c');
+KeyboardButton emotes('c');
 
-button moveForward('w');
-button moveLeft('a');
-button moveBack('s');
-button moveRight('d');
-button jump(' ');
-
-#if MAIN_TABLE==right
-#define ALT_TABLE left
-#elif MAIN_TABLE==left
-#define ALT_TABLE right
-#endif
+KeyboardButton moveForward('w');
+KeyboardButton moveLeft('a');
+KeyboardButton moveBack('s');
+KeyboardButton moveRight('d');
+KeyboardButton jump(' ');
 
 DJTurntableController::TurntableExpansion * mainTable = &dj.MAIN_TABLE;
 DJTurntableController::TurntableExpansion * altTable = &dj.ALT_TABLE;
 
 EffectHandler fx(dj);
 
-RateLimiter pollRate(UpdateRate);  // Controller update rate
-RateLimiter reconnectRate(ConnectRate);  // Controller reconnect rate
-
+const uint8_t DetectPin = 4;
 const uint8_t SafetyPin = 9;
 
-#ifdef DEBUG
-#define DEBUG_PRINT(x)   do {Serial.print(x);}   while(0)
-#define DEBUG_PRINTLN(x) do {Serial.println(x);} while(0)
-#else
-#define DEBUG_PRINT(x)
-#define DEBUG_PRINTLN(x)
-#endif
-
-#define D_COMMS(x) DEBUG_PRINTLN(x)
+ConnectionHelper controller(dj, DetectPin, UpdateRate, DetectTime, ConnectRate);
 
 void setup() {
 	#ifdef DEBUG
@@ -194,10 +85,10 @@ void setup() {
 		for (;;);  // Safety loop!
 	}
 
-	Wire.begin();
-	startMultiplexer();
+	startMultiplexer();  // Enable the multiplexer, currently being used as a level shifter (to be removed)
+	controller.begin();  // Initialize controller bus and auto-detect
 
-	while (!dj.connect()) {
+	while (!controller.isReady()) {
 		DEBUG_PRINTLN(F("Couldn't connect to turntable!"));
 		delay(500);
 	}
@@ -205,7 +96,7 @@ void setup() {
 }
 
 void loop() {
-	if (controllerReady()) {
+	if (controller.isReady()) {
 		djController();
 	}
 }
@@ -267,7 +158,9 @@ void djController() {
 }
 
 void aiming(int8_t xIn, int8_t yIn) {
-	const int8_t MaxInput = 20;  // Get rid of extranous values
+	const int8_t MaxInput = 20;  // Ignore values above this threshold as extranous
+	static_assert(HorizontalSens * MaxInput <= 127, "Your sensitivity is too high!");  // Check for signed overflow (int8_t)
+	static_assert(VerticalSens   * MaxInput <= 127, "Your sensitivity is too high!");
 
 	static int8_t lastAim[2] = { 0, 0 };
 	int8_t * aim[2] = { &xIn, &yIn };  // Store in array for iterative access
@@ -284,6 +177,16 @@ void aiming(int8_t xIn, int8_t yIn) {
 	}
 
 	Mouse.move(xIn * HorizontalSens, yIn * VerticalSens);
+
+	#ifdef DEBUG_HID
+	if (xIn != 0 || yIn != 0) {
+		DEBUG_PRINT("Moved the mouse {");
+		DEBUG_PRINT(xIn * HorizontalSens);
+		DEBUG_PRINT(", ");
+		DEBUG_PRINT(yIn * VerticalSens);
+		DEBUG_PRINTLN("}");
+	}
+	#endif
 }
 
 void joyWASD(uint8_t x, uint8_t y) {
@@ -297,53 +200,8 @@ void joyWASD(uint8_t x, uint8_t y) {
 	moveBack.press(y < JoyCenter - JoyDeadzone);
 }
 
-boolean controllerReady() {
-	static boolean connected = true;
-
-	// Attempt to reconnect at a regular interval
-	if (!connected && reconnectRate.ready()) {
-		connected = dj.reconnect();
-		D_COMMS("Attempting to reconnect");
-	}
-	
-	// If connected, update at a regular interval
-	if (connected && pollRate.ready()) {
-		connected = dj.update();  // New data
-		if (!connected) {
-			releaseAll();  // Something went wrong, clear current presses
-			D_COMMS("Bad update! Must reconnect");
-		}
-		else {
-			D_COMMS("Successul update!");
-			#ifdef DEBUG_RAW
-			dj.printDebug();
-			#endif
-		}
-		return connected;
-	}
-
-	return false;
-}
-
-void releaseAll() {
-	fire.release();
-	boop.release();
-	reload.release();
-
-	ultimate.release();
-	amp.release();
-	crossfade.release();
-	
-	emotes.release();
-
-	moveForward.release();
-	moveLeft.release();
-	moveBack.release();
-	moveRight.release();
-	jump.release();
-}
-
 void startMultiplexer() {
+	Wire.begin();
 	Wire.beginTransmission(0x70);
 	Wire.write(1);
 	Wire.endTransmission();

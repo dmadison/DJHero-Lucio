@@ -51,10 +51,12 @@
 #define D_CDLN(x)
 #endif
 
-#if MAIN_TABLE==right
-#define ALT_TABLE left
-#elif MAIN_TABLE==left
-#define ALT_TABLE right
+#ifdef DEBUG_CONFIG
+#define D_CFG(x)   DEBUG_PRINT(x)
+#define D_CFGLN(x) DEBUG_PRINTLN(x)
+#else
+#define D_CFG(x)
+#define D_CFGLN(x)
 #endif
 
 // HID_Button: Handles HID button state to prevent input spam
@@ -398,6 +400,121 @@ private:
 	RateLimiter reconnectRate;
 
 	boolean connected = false;
+};
+
+extern DJTurntableController::TurntableExpansion * mainTable;
+extern DJTurntableController::TurntableExpansion * altTable;
+
+// TurntableConfig: Handles switching between "main" and "alternate" sides of the turntable
+class TurntableConfig {
+public:
+	typedef boolean(DJTurntableController::Data::*DJFunction)(void) const;  // Wrapper for the body function pointer
+	typedef boolean(DJTurntableController::Data::TurntableExpansion::*ExpansionFunction)(void) const;  // Wrapper for the expansion function pointers
+	typedef DJTurntableController::TurntableConfig Config;
+
+	TurntableConfig(DJTurntableController &obj, DJFunction baseFunc, ExpansionFunction exFunc, unsigned long t)
+		: Controller(obj), ConfigInput(baseFunc), SideSelectInput(exFunc), StableTime(t), limiter(t) {}
+
+	void check() {
+		if (ConfigInput == nullptr || SideSelectInput == nullptr) {
+			return;  // Bad function pointers, would otherwise throw exception
+		}
+
+		boolean configPressed = (Controller.*ConfigInput)();
+		if (!configPressed || Controller.getNumTurntables() < 2) {
+			return;  // Config button not pressed or < 2 turntables, no reason to check anything else
+		}
+
+		// Check the held times for each control input
+		unsigned long configTime = configButton.check(configPressed);
+		unsigned long leftTime = leftExpansion.check((Controller.left.*SideSelectInput)());
+		unsigned long rightTime = rightExpansion.check((Controller.right.*SideSelectInput)());
+
+		// Check if inputs have been held long enough
+		if (configTime >= StableTime) {  // Main / base input
+			Config selection = Config::BaseOnly;
+
+			if (leftTime >= StableTime) {  // Left turntable
+				selection = Config::Left;
+			}
+			else if (rightTime >= StableTime) {  // Right turntable
+				selection = Config::Right;
+			}
+
+			// We've made a selection! Let's save it
+			if (selection != Config::BaseOnly && limiter.ready()) {
+				write(selection);
+			}
+		}
+		//else {
+		//	D_CFG("Config - ");
+
+		//	D_CFG("Base: (");
+		//	D_CFG(configTime);
+		//	D_CFG(" / ");
+		//	D_CFG(StableTime);
+		//	D_CFG(") ");
+
+		//	D_CFG("Left: (");
+		//	D_CFG(leftTime);
+		//	D_CFG(" / ");
+		//	D_CFG(StableTime);
+		//	D_CFG(") ");
+
+		//	D_CFG("Right: (");
+		//	D_CFG(rightTime);
+		//	D_CFG(" / ");
+		//	D_CFG(StableTime);
+		//	D_CFG(") ");
+
+		//	D_CFGLN();
+		//}
+	}
+
+	void read() {
+		// { Read EEPROM here }
+		reload();
+	}
+
+private:
+	// Load current configuration to pointers 
+	void reload() {
+		// Left as main, right as alternate
+		if (currentConfig == Config::Left) {
+			mainTable = &Controller.left;
+			altTable = &Controller.right;
+		}
+		else if (currentConfig == Config::Right) {
+			mainTable = &Controller.right;
+			altTable = &Controller.left;
+		}
+	}
+
+	// Save side configuration to EEPROM
+	void write(Config side) {
+		if (!(side == Config::Left || side == Config::Right)) {
+			return;  // Not a left/right selection, don't write to memory
+		}
+		// { Write EEPROM here }
+		currentConfig = side;  // Save in local memory
+		reload();  // Rewrite current pointers with new selection
+
+		D_CFG("Wrote new config! Main table: ");
+		D_CFGLN(side == Config::Left ? "Left" : "Right");
+	}
+
+	DJTurntableController & Controller;
+	const DJFunction ConfigInput;
+	const ExpansionFunction SideSelectInput;
+
+	const unsigned long StableTime;  // How long inputs must be stable for
+	RateLimiter limiter;  // Prevents spamming config writes
+
+	HeldFor configButton = HeldFor(true);  // Looking for "pressed" state on all 3 buttons
+	HeldFor leftExpansion = HeldFor(true);
+	HeldFor rightExpansion = HeldFor(true);
+
+	Config currentConfig = Config::Right;  // Assume right side is 'main' if none is set
 };
 
 #endif

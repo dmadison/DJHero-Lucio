@@ -300,9 +300,7 @@ private:
 // ControllerDetect: Measures and debounces the controller's "connected" pin
 class ControllerDetect {
 public:
-	ControllerDetect(uint8_t pin, unsigned long stableWait) : Pin(pin), StableTime(stableWait) {
-		stableSince = millis() - StableTime;
-	}
+	ControllerDetect(uint8_t pin, unsigned long stableWait) : Pin(pin), StableTime(stableWait) {}
 
 	void begin() {
 		pinMode(Pin, INPUT);
@@ -314,30 +312,29 @@ public:
 		D_CD("CD pin is ");
 		D_CD(currentState ? "HIGH " : "LOW ");
 
-		// Controller detected! (Rising edge)
-		if (currentState == HIGH) {
-			if (lastPinState == LOW) {  // This is new!
-				stableSince = millis();  // Reset the stable counter
-			}
-			D_CD("Stable for: ");
-			D_CD(millis() - stableSince);
-			D_CD(" / ");
-			D_CD(StableTime);
-			D_CDLN();
+		if (currentState == HIGH && detected == true) {
+			D_CDLN("Controller connected!");
+			return true;  // We're still good!
 		}
 
-		lastPinState = currentState;  // Save pin state for future reference
+		// Check how long the pin has been high. 0 if it's low.
+		unsigned long currentTime = stateDuration.check(currentState);
 
-		// If we've connected and have been been stable for X time, return true
-		return currentState && (millis() - stableSince >= StableTime);
+		D_CD("Stable for: ");
+		D_CD(currentTime);
+		D_CD(" / ");
+		D_CD(StableTime);
+		D_CDLN();
+
+		return detected = currentTime >= StableTime;  // Set flag and return to user.
 	}
 
 private:
 	const uint8_t Pin;  // Connected pin to read from. High == connected, Low == disconnected (needs pull-down)
 	unsigned long StableTime;  // Time before the connection is considered "stable", in milliseconds
 
-	unsigned long stableSince;
-	boolean lastPinState = HIGH;  // Assume connected for first read
+	HeldFor stateDuration = HeldFor(HIGH, HIGH);  // Looking for a high connection, assume first read was high
+	boolean detected = true;  // Assume controller is detected for first call
 };
 
 // ConnectionHelper: Keeps track of the controller's 'connected' state, and auto-updating control data

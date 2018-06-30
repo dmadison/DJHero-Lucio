@@ -227,6 +227,32 @@ private:
 	unsigned long lastUpdate;
 };
 
+// HeldFor: Checks how long a two-state variable has been in a given state
+class HeldFor {
+public:
+	HeldFor(boolean goalState) : HeldFor(goalState, !goalState) {}
+	HeldFor(boolean goalState, boolean setInitial)
+		: MatchState(goalState), lastState(setInitial) {}
+
+	unsigned long check(boolean state) {
+		if (state == MatchState) {
+			if (lastState == !MatchState) {  // This is new!
+				stableSince = millis();  // Reset the stable counter
+			}
+			lastState = state;  // Save for future reference
+			return millis() - stableSince;  // How long we've been stable
+		}
+
+		lastState = state;
+		return 0;  // Nothing yet!
+	}
+
+private:
+	const boolean MatchState;  // The state we're looking for
+	boolean lastState;  // Last recorded state
+	unsigned long stableSince;  // Timestamp for edge change
+};
+
 // EffectHandler: Keeps track of changes to the turntable's "effect dial"
 class EffectHandler {
 public:

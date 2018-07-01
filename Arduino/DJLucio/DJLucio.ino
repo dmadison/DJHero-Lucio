@@ -69,7 +69,7 @@ KeyboardButton moveBack('s');
 KeyboardButton moveRight('d');
 KeyboardButton jump(' ');
 
-EffectHandler fx(dj);
+EffectHandler fx(dj, EffectsTimeout);
 
 const uint8_t DetectPin = 4;
 const uint8_t SafetyPin = 9;

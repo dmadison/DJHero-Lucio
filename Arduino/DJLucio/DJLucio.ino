@@ -22,6 +22,8 @@
 #include <Mouse.h>
 #include <Keyboard.h>
 
+#include <EEPROM.h>
+
 // User Settings
 const int8_t HorizontalSens = 5;  // Mouse sensitivity multipler - 6 max
 const int8_t VerticalSens = 2;    // Mouse sensitivity multipler - 6 max

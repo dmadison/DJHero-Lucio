@@ -472,7 +472,10 @@ public:
 	}
 
 	void read() {
-		// { Read EEPROM here }
+		EEPROM.get(EEPROM_Addr, currentConfig);
+		if (!validConfig(currentConfig)) {
+			write(Config::Right);  // Fix dirty memory
+		}
 		reload();
 	}
 
@@ -492,16 +495,25 @@ private:
 
 	// Save side configuration to EEPROM
 	void write(Config side) {
-		if (!(side == Config::Left || side == Config::Right)) {
+		if (!validConfig(side)) {
 			return;  // Not a left/right selection, don't write to memory
 		}
-		// { Write EEPROM here }
+		
+		EEPROM.put(EEPROM_Addr, side);  // Save in 'permanent' memory
 		currentConfig = side;  // Save in local memory
 		reload();  // Rewrite current pointers with new selection
 
 		D_CFG("Wrote new config! Main table: ");
 		D_CFGLN(side == Config::Left ? "Left" : "Right");
 	}
+
+	boolean validConfig(Config side) {
+		return side == Config::Left || side == Config::Right;
+	}
+
+	// Just for fun. Works out to be 508, which is less than
+	// the 512 bytes available on most smaller AVR boards
+	static const uint16_t EEPROM_Addr = 'L' + 'u' + 'c' + 'i' + 'o';  
 
 	DJTurntableController & Controller;
 	const DJFunction ConfigInput;

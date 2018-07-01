@@ -446,29 +446,6 @@ public:
 				write(selection);
 			}
 		}
-		//else {
-		//	D_CFG("Config - ");
-
-		//	D_CFG("Base: (");
-		//	D_CFG(configTime);
-		//	D_CFG(" / ");
-		//	D_CFG(StableTime);
-		//	D_CFG(") ");
-
-		//	D_CFG("Left: (");
-		//	D_CFG(leftTime);
-		//	D_CFG(" / ");
-		//	D_CFG(StableTime);
-		//	D_CFG(") ");
-
-		//	D_CFG("Right: (");
-		//	D_CFG(rightTime);
-		//	D_CFG(" / ");
-		//	D_CFG(StableTime);
-		//	D_CFG(") ");
-
-		//	D_CFGLN();
-		//}
 	}
 
 	void read() {

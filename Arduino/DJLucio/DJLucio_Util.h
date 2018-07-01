@@ -258,7 +258,7 @@ private:
 // EffectHandler: Keeps track of changes to the turntable's "effect dial"
 class EffectHandler {
 public:
-	EffectHandler(DJTurntableController &dj) : fx(dj) {}
+	EffectHandler(DJTurntableController &dj, unsigned long t) : fx(dj), timeout(t) {}
 
 	boolean changed(uint8_t threshold) {
 		return abs(total) >= threshold;
@@ -293,7 +293,7 @@ public:
 
 private:
 	DJTurntableController::EffectRollover fx;
-	RateLimiter timeout = RateLimiter(EffectsTimeout);  // Timeout for the fx tracker to be zero'd
+	RateLimiter timeout;  // Timeout for the fx tracker to be zero'd
 
 	int16_t total = 0;
 };

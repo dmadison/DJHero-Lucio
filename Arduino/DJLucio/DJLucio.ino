@@ -26,15 +26,15 @@
 
 // User Settings
 const int8_t HorizontalSens = 5;  // Mouse sensitivity multipler - 6 max
-const int8_t VerticalSens = 2;    // Mouse sensitivity multipler - 6 max
+const int8_t VerticalSens   = 2;  // Mouse sensitivity multipler - 6 max
 
 // Tuning Options
 const unsigned long UpdateRate = 4;          // Controller polling rate, in milliseconds (ms)
 const unsigned long DetectTime = 1000;       // Time before a connected controller is considered stable (ms)
 const unsigned long ConnectRate = 500;       // Rate to attempt reconnections, in ms
-const uint8_t       EffectThreshold = 10;    // Threshold to trigger abilities from the fx dial, 10 = 1/3rd of a revolution
-const unsigned long EffectsTimeout = 1200;   // Timeout for the effects tracker, in ms
 const unsigned long ConfigThreshold = 3000;  // Time the euphoria and green buttons must be held to set a new config (ms)
+const unsigned long EffectsTimeout = 1200;   // Timeout for the effects tracker, in ms
+const uint8_t       EffectThreshold = 10;    // Threshold to trigger abilities from the fx dial, 10 = 1/3rd of a revolution
 
 // Debug Flags (uncomment to add)
 // #define DEBUG                // Enable to use any prints
@@ -49,6 +49,9 @@ const unsigned long ConfigThreshold = 3000;  // Time the euphoria and green butt
 #include "DJLucio_Util.h"  // Utility classes
 
 DJTurntableController dj;
+
+DJTurntableController::TurntableExpansion * mainTable = &dj.right;
+DJTurntableController::TurntableExpansion * altTable = &dj.left;
 
 MouseButton fire(MOUSE_LEFT);
 MouseButton boop(MOUSE_RIGHT);
@@ -66,13 +69,10 @@ KeyboardButton moveBack('s');
 KeyboardButton moveRight('d');
 KeyboardButton jump(' ');
 
-DJTurntableController::TurntableExpansion * mainTable = &dj.right;
-DJTurntableController::TurntableExpansion * altTable = &dj.left;
+EffectHandler fx(dj, EffectsTimeout);
 
-EffectHandler fx(dj);
-
-const uint8_t DetectPin = 4;
-const uint8_t SafetyPin = 9;
+const uint8_t DetectPin = 4;  // Pulled low by EXTERNAL pull-down (not optional!)
+const uint8_t SafetyPin = 9;  // Pulled high by internal pull-up
 
 ConnectionHelper controller(dj, DetectPin, UpdateRate, DetectTime, ConnectRate);
 TurntableConfig config(dj, &DJTurntableController::buttonEuphoria, &DJTurntableController::TurntableExpansion::buttonGreen, 3000);
@@ -92,7 +92,7 @@ void setup() {
 	startMultiplexer();  // Enable the multiplexer, currently being used as a level shifter (to be removed)
 
 	config.read();  // Set expansion pointers from EEPROM config
-	controller.begin();  // Initialize controller bus and auto-detect
+	controller.begin();  // Initialize controller bus and detect pins
 
 	while (!controller.isReady()) {
 		DEBUG_PRINTLN(F("Couldn't connect to turntable!"));

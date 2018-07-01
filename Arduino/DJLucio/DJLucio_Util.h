@@ -413,7 +413,7 @@ public:
 	typedef DJTurntableController::TurntableConfig Config;
 
 	TurntableConfig(DJTurntableController &obj, DJFunction baseFunc, ExpansionFunction exFunc, unsigned long t)
-		: Controller(obj), ConfigInput(baseFunc), SideSelectInput(exFunc), StableTime(t), limiter(t) {}
+		: Controller(obj), ConfigInput(baseFunc), SideSelectInput(exFunc), StableTime(t), limiter(t/2) {}
 
 	void check() {
 		if (ConfigInput == nullptr || SideSelectInput == nullptr) {

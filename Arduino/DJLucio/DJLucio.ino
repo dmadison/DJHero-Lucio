@@ -71,8 +71,8 @@ KeyboardButton jump(' ');
 
 EffectHandler fx(dj, EffectsTimeout);
 
-const uint8_t DetectPin = 4;
-const uint8_t SafetyPin = 9;
+const uint8_t DetectPin = 4;  // Pulled low by EXTERNAL pull-down (not optional!)
+const uint8_t SafetyPin = 9;  // Pulled high by internal pull-up
 
 ConnectionHelper controller(dj, DetectPin, UpdateRate, DetectTime, ConnectRate);
 TurntableConfig config(dj, &DJTurntableController::buttonEuphoria, &DJTurntableController::TurntableExpansion::buttonGreen, 3000);
@@ -92,7 +92,7 @@ void setup() {
 	startMultiplexer();  // Enable the multiplexer, currently being used as a level shifter (to be removed)
 
 	config.read();  // Set expansion pointers from EEPROM config
-	controller.begin();  // Initialize controller bus and auto-detect
+	controller.begin();  // Initialize controller bus and detect pins
 
 	while (!controller.isReady()) {
 		DEBUG_PRINTLN(F("Couldn't connect to turntable!"));

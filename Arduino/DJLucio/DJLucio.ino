@@ -50,6 +50,9 @@ const unsigned long ConfigThreshold = 3000;  // Time the euphoria and green butt
 
 DJTurntableController dj;
 
+DJTurntableController::TurntableExpansion * mainTable = &dj.right;
+DJTurntableController::TurntableExpansion * altTable = &dj.left;
+
 MouseButton fire(MOUSE_LEFT);
 MouseButton boop(MOUSE_RIGHT);
 KeyboardButton reload('r');
@@ -65,9 +68,6 @@ KeyboardButton moveLeft('a');
 KeyboardButton moveBack('s');
 KeyboardButton moveRight('d');
 KeyboardButton jump(' ');
-
-DJTurntableController::TurntableExpansion * mainTable = &dj.right;
-DJTurntableController::TurntableExpansion * altTable = &dj.left;
 
 EffectHandler fx(dj);
 

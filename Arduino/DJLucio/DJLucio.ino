@@ -32,9 +32,9 @@ const int8_t VerticalSens = 2;    // Mouse sensitivity multipler - 6 max
 const unsigned long UpdateRate = 4;          // Controller polling rate, in milliseconds (ms)
 const unsigned long DetectTime = 1000;       // Time before a connected controller is considered stable (ms)
 const unsigned long ConnectRate = 500;       // Rate to attempt reconnections, in ms
-const uint8_t       EffectThreshold = 10;    // Threshold to trigger abilities from the fx dial, 10 = 1/3rd of a revolution
-const unsigned long EffectsTimeout = 1200;   // Timeout for the effects tracker, in ms
 const unsigned long ConfigThreshold = 3000;  // Time the euphoria and green buttons must be held to set a new config (ms)
+const unsigned long EffectsTimeout = 1200;   // Timeout for the effects tracker, in ms
+const uint8_t       EffectThreshold = 10;    // Threshold to trigger abilities from the fx dial, 10 = 1/3rd of a revolution
 
 // Debug Flags (uncomment to add)
 // #define DEBUG                // Enable to use any prints

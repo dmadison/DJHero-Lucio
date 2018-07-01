@@ -51,10 +51,12 @@
 #define D_CDLN(x)
 #endif
 
-#if MAIN_TABLE==right
-#define ALT_TABLE left
-#elif MAIN_TABLE==left
-#define ALT_TABLE right
+#ifdef DEBUG_CONFIG
+#define D_CFG(x)   DEBUG_PRINT(x)
+#define D_CFGLN(x) DEBUG_PRINTLN(x)
+#else
+#define D_CFG(x)
+#define D_CFGLN(x)
 #endif
 
 // HID_Button: Handles HID button state to prevent input spam
@@ -227,6 +229,32 @@ private:
 	unsigned long lastUpdate;
 };
 
+// HeldFor: Checks how long a two-state variable has been in a given state
+class HeldFor {
+public:
+	HeldFor(boolean goalState) : HeldFor(goalState, !goalState) {}
+	HeldFor(boolean goalState, boolean setInitial)
+		: MatchState(goalState), lastState(setInitial) {}
+
+	unsigned long check(boolean state) {
+		if (state == MatchState) {
+			if (lastState == !MatchState) {  // This is new!
+				stableSince = millis();  // Reset the stable counter
+			}
+			lastState = state;  // Save for future reference
+			return millis() - stableSince;  // How long we've been stable
+		}
+
+		lastState = state;
+		return 0;  // Nothing yet!
+	}
+
+private:
+	const boolean MatchState;  // The state we're looking for
+	boolean lastState;  // Last recorded state
+	unsigned long stableSince;  // Timestamp for edge change
+};
+
 // EffectHandler: Keeps track of changes to the turntable's "effect dial"
 class EffectHandler {
 public:
@@ -274,9 +302,7 @@ private:
 // ControllerDetect: Measures and debounces the controller's "connected" pin
 class ControllerDetect {
 public:
-	ControllerDetect(uint8_t pin, unsigned long stableWait) : Pin(pin), StableTime(stableWait) {
-		stableSince = millis() - StableTime;
-	}
+	ControllerDetect(uint8_t pin, unsigned long stableWait) : Pin(pin), StableTime(stableWait) {}
 
 	void begin() {
 		pinMode(Pin, INPUT);
@@ -288,30 +314,29 @@ public:
 		D_CD("CD pin is ");
 		D_CD(currentState ? "HIGH " : "LOW ");
 
-		// Controller detected! (Rising edge)
-		if (currentState == HIGH) {
-			if (lastPinState == LOW) {  // This is new!
-				stableSince = millis();  // Reset the stable counter
-			}
-			D_CD("Stable for: ");
-			D_CD(millis() - stableSince);
-			D_CD(" / ");
-			D_CD(StableTime);
-			D_CDLN();
+		if (currentState == HIGH && detected == true) {
+			D_CDLN("Controller connected!");
+			return true;  // We're still good!
 		}
 
-		lastPinState = currentState;  // Save pin state for future reference
+		// Check how long the pin has been high. 0 if it's low.
+		unsigned long currentTime = stateDuration.check(currentState);
 
-		// If we've connected and have been been stable for X time, return true
-		return currentState && (millis() - stableSince >= StableTime);
+		D_CD("Stable for: ");
+		D_CD(currentTime);
+		D_CD(" / ");
+		D_CD(StableTime);
+		D_CDLN();
+
+		return detected = currentTime >= StableTime;  // Set flag and return to user.
 	}
 
 private:
 	const uint8_t Pin;  // Connected pin to read from. High == connected, Low == disconnected (needs pull-down)
 	unsigned long StableTime;  // Time before the connection is considered "stable", in milliseconds
 
-	unsigned long stableSince;
-	boolean lastPinState = HIGH;  // Assume connected for first read
+	HeldFor stateDuration = HeldFor(HIGH, HIGH);  // Looking for a high connection, assume first read was high
+	boolean detected = true;  // Assume controller is detected for first call
 };
 
 // ConnectionHelper: Keeps track of the controller's 'connected' state, and auto-updating control data
@@ -375,6 +400,110 @@ private:
 	RateLimiter reconnectRate;
 
 	boolean connected = false;
+};
+
+extern DJTurntableController::TurntableExpansion * mainTable;
+extern DJTurntableController::TurntableExpansion * altTable;
+
+// TurntableConfig: Handles switching between "main" and "alternate" sides of the turntable
+class TurntableConfig {
+public:
+	typedef boolean(DJTurntableController::Data::*DJFunction)(void) const;  // Wrapper for the body function pointer
+	typedef boolean(DJTurntableController::Data::TurntableExpansion::*ExpansionFunction)(void) const;  // Wrapper for the expansion function pointers
+	typedef DJTurntableController::TurntableConfig Config;
+
+	TurntableConfig(DJTurntableController &obj, DJFunction baseFunc, ExpansionFunction exFunc, unsigned long t)
+		: Controller(obj), ConfigInput(baseFunc), SideSelectInput(exFunc), StableTime(t), limiter(t/2) {}
+
+	void check() {
+		if (ConfigInput == nullptr || SideSelectInput == nullptr) {
+			return;  // Bad function pointers, would otherwise throw exception
+		}
+
+		boolean configPressed = (Controller.*ConfigInput)();
+		if (!configPressed || Controller.getNumTurntables() < 2) {
+			return;  // Config button not pressed or < 2 turntables, no reason to check anything else
+		}
+
+		// Check the held times for each control input
+		unsigned long configTime = configButton.check(configPressed);
+		unsigned long leftTime = leftExpansion.check((Controller.left.*SideSelectInput)());
+		unsigned long rightTime = rightExpansion.check((Controller.right.*SideSelectInput)());
+
+		// Check if inputs have been held long enough
+		if (configTime >= StableTime) {  // Main / base input
+			Config selection = Config::BaseOnly;
+
+			if (leftTime >= StableTime) {  // Left turntable
+				selection = Config::Left;
+			}
+			else if (rightTime >= StableTime) {  // Right turntable
+				selection = Config::Right;
+			}
+
+			// We've made a selection! Let's save it
+			if (selection != Config::BaseOnly && limiter.ready()) {
+				write(selection);
+			}
+		}
+	}
+
+	void read() {
+		EEPROM.get(EEPROM_Addr, currentConfig);
+		if (!validConfig(currentConfig)) {
+			write(Config::Right);  // Fix dirty memory
+		}
+		reload();
+	}
+
+private:
+	// Load current configuration to pointers 
+	void reload() {
+		// Left as main, right as alternate
+		if (currentConfig == Config::Left) {
+			mainTable = &Controller.left;
+			altTable = &Controller.right;
+		}
+		else if (currentConfig == Config::Right) {
+			mainTable = &Controller.right;
+			altTable = &Controller.left;
+		}
+	}
+
+	// Save side configuration to EEPROM
+	void write(Config side) {
+		if (!validConfig(side)) {
+			return;  // Not a left/right selection, don't write to memory
+		}
+		
+		EEPROM.put(EEPROM_Addr, side);  // Save in 'permanent' memory
+		currentConfig = side;  // Save in local memory
+		reload();  // Rewrite current pointers with new selection
+
+		D_CFG("Wrote new config! Main table: ");
+		D_CFGLN(side == Config::Left ? "Left" : "Right");
+	}
+
+	boolean validConfig(Config side) {
+		return side == Config::Left || side == Config::Right;
+	}
+
+	// Just for fun. Works out to be 508, which is less than
+	// the 512 bytes available on most smaller AVR boards
+	static const uint16_t EEPROM_Addr = 'L' + 'u' + 'c' + 'i' + 'o';  
+
+	DJTurntableController & Controller;
+	const DJFunction ConfigInput;
+	const ExpansionFunction SideSelectInput;
+
+	const unsigned long StableTime;  // How long inputs must be stable for
+	RateLimiter limiter;  // Prevents spamming config writes
+
+	HeldFor configButton = HeldFor(true);  // Looking for "pressed" state on all 3 buttons
+	HeldFor leftExpansion = HeldFor(true);
+	HeldFor rightExpansion = HeldFor(true);
+
+	Config currentConfig = Config::Right;  // Assume right side is 'main' if none is set
 };
 
 #endif

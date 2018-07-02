@@ -364,6 +364,8 @@ private:
 	unsigned long patternStart;
 };
 
+extern LEDHandler LED;
+
 // EffectHandler: Keeps track of changes to the turntable's "effect dial"
 class EffectHandler {
 public:
@@ -466,9 +468,11 @@ public:
 			connected = controller.update();  // New data
 			if (!connected) {
 				HID_Button::releaseAll();  // Something went wrong, clear current pressed buttons
+				LED.write(LOW);  // LED low = disconnected
 				D_COMMS("Bad update! Must reconnect");
 			}
 			else {
+				LED.write(HIGH);  // LED high = connected
 				D_COMMS("Successul update!");
 				#ifdef DEBUG_RAW
 				dj.printDebug();
@@ -588,6 +592,8 @@ private:
 		EEPROM.put(EEPROM_Addr, side);  // Save in 'permanent' memory
 		currentConfig = side;  // Save in local memory
 		reload();  // Rewrite current pointers with new selection
+
+		LED.blink(5, 1000);  // Flash the LED to alert the user! 5 hz for 1 second (non-blocking)
 
 		D_CFG("Wrote new config! Main table: ");
 		D_CFGLN(side == Config::Left ? "Left" : "Right");

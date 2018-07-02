@@ -95,6 +95,7 @@ void setup() {
 
 	startMultiplexer();  // Enable the multiplexer, currently being used as a level shifter (to be removed)
 
+	LED.begin();  // Set LED pin mode
 	config.read();  // Set expansion pointers from EEPROM config
 	controller.begin();  // Initialize controller bus and detect pins
 
@@ -109,6 +110,7 @@ void loop() {
 	if (controller.isReady()) {
 		djController();
 		config.check();
+		LED.update();
 	}
 }
 

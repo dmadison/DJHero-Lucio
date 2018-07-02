@@ -255,6 +255,48 @@ private:
 	unsigned long stableSince;  // Timestamp for edge change
 };
 
+// SoftwareOscillator: oscillates its state output based on the given period, using the millis() timer
+class SoftwareOscillator {
+public:
+	boolean getState() {
+		if (period != 0) {  // Only oscillate if a period is set
+			unsigned long timeNow = millis();
+
+			// Toggle output at period
+			if (timeNow - lastFlip >= period) {
+				state = !state;
+				lastFlip = timeNow;
+			}
+		}
+
+		return state;
+	}
+
+	void stopOscillating() {
+		setPeriod(0);
+	}
+
+	void setPeriod(unsigned long p) {
+		period = p;
+		resetTimer();
+	}
+
+	void setFrequency(unsigned long h) {
+		if (h == 0) { return; }  // Avoiding div/0
+		period = (1000 / h) / 2;  // 1000 because we're in milliseconds, /2 because the output has two phases
+		resetTimer();
+	}
+
+private:
+	void resetTimer() {
+		lastFlip = millis();  // Set the timer to ready
+	}
+
+	boolean state;  // State of the oscillator, high or low
+	unsigned long period;  // Period of the oscillation
+	unsigned long lastFlip;  // Timestamp of the last state flip
+};
+
 // EffectHandler: Keeps track of changes to the turntable's "effect dial"
 class EffectHandler {
 public:

@@ -297,6 +297,73 @@ private:
 	unsigned long lastFlip;  // Timestamp of the last state flip
 };
 
+// LEDHandler: for dealing with user notifications on the built-in LED
+class LEDHandler {
+public:
+	LEDHandler(uint8_t pin = LED_BUILTIN) : LEDHandler(pin, false) {}
+	LEDHandler(uint8_t pin, boolean inverted) : Pin(pin), Inverted(inverted) {}
+
+	void begin() {
+		pinMode(Pin, OUTPUT);
+	}
+
+	void update() {
+		if (!currentlyBlinking) {
+			return;  // Nothing to do here
+		}
+
+		setLED(oscillator.getState());  // Write LED based on the blink state
+
+		if (duration != 0 && millis() - patternStart >= duration) {
+			stopBlinking();  // Blinking is done!
+			setLED(state);  // Re-write the state before blinking
+		}
+	}
+
+	void write(boolean out) {
+		if (out == state || currentlyBlinking == true) {
+			return;  // LED already at this state, or blinking
+		}
+		state = out;
+		setLED(state);
+	}
+
+	void blink(uint16_t hertz) {
+		blink(hertz, 0);
+	}
+
+	void blink(uint16_t hertz, unsigned long length) {
+		if (hertz == 0) {  // If frequency is 0, no blinking
+			stopBlinking();
+			return;
+		}
+		
+		patternStart = millis();  // Record the time that blinking started
+		duration = length;  // Duration to blink, in milliseconds
+		oscillator.setFrequency(hertz);
+		currentlyBlinking = true;
+	}
+
+	void stopBlinking() {
+		currentlyBlinking = false;
+	}
+
+private:
+	void setLED(boolean s) {
+		digitalWrite(Pin, s ^ Inverted);  // Bool XOR with the inverted flag
+	}
+
+	const uint8_t Pin;
+	const boolean Inverted = false;
+
+	boolean state = LOW;
+
+	boolean currentlyBlinking = false;
+	SoftwareOscillator oscillator;
+	unsigned long duration;
+	unsigned long patternStart;
+};
+
 // EffectHandler: Keeps track of changes to the turntable's "effect dial"
 class EffectHandler {
 public:

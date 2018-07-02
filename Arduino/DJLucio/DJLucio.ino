@@ -73,7 +73,11 @@ EffectHandler fx(dj, EffectsTimeout);
 
 const uint8_t DetectPin = 4;  // Pulled low by EXTERNAL pull-down (not optional!)
 const uint8_t SafetyPin = 9;  // Pulled high by internal pull-up
+const uint8_t LEDPin = 17;    // RX LED on the Pro Micro
 
+const boolean LEDInverted = true;  // Inverted on the Pro Micro (LOW is lit)
+
+LEDHandler LED(LEDPin, LEDInverted);
 ConnectionHelper controller(dj, DetectPin, UpdateRate, DetectTime, ConnectRate);
 TurntableConfig config(dj, &DJTurntableController::buttonEuphoria, &DJTurntableController::TurntableExpansion::buttonGreen, 3000);
 

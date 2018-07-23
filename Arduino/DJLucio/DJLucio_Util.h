@@ -117,5 +117,6 @@ private:
 };
 
 #include "DJLucio_Controller.h"
+#include "DJLucio_ConfigMode.h"
 
 #endif

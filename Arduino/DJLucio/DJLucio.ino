@@ -47,6 +47,10 @@ const uint8_t       EffectThreshold = 10;    // Threshold to trigger abilities f
 // ---------------------------------------------------------------------------
 
 #include "DJLucio_Util.h"  // Utility classes
+#include "DJLucio_LED.h"   // LED handling classes
+#include "DJLucio_HID.h"   // HID classes (Keyboard, Mouse)
+#include "DJLucio_Controller.h"  // Turntable connection and data helper classes
+#include "DJLucio_ConfigMode.h"  // Configuration mode (left/right) switching class
 
 DJTurntableController dj;
 

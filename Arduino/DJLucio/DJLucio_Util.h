@@ -59,9 +59,6 @@
 #define D_CFGLN(x)
 #endif
 
-#include "DJLucio_HID.h"
-#include "DJLucio_LED.h"
-
 // RateLimiter: Simple timekeeper that returns 'true' if X time has passed
 class RateLimiter {
 public:
@@ -115,8 +112,5 @@ private:
 	boolean lastState;  // Last recorded state
 	unsigned long stableSince;  // Timestamp for edge change
 };
-
-#include "DJLucio_Controller.h"
-#include "DJLucio_ConfigMode.h"
 
 #endif

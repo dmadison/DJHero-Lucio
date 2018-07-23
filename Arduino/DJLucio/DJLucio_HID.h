@@ -21,6 +21,8 @@
 #ifndef DJLucio_HID_h
 #define DJLucio_HID_h
 
+#include "DJLucio_Util.h"
+
 #ifdef DEBUG_HID
 #define D_HID(x)   DEBUG_PRINT(x)
 #define D_HIDLN(x) DEBUG_PRINTLN(x)

@@ -22,6 +22,7 @@
 #define DJLucio_Controller_h
 
 #include <NintendoExtensionCtrl.h>
+#include "DJLucio_Util.h"
 
 #ifdef DEBUG_CONTROLDETECT
 #define D_CD(x)   DEBUG_PRINT(x)

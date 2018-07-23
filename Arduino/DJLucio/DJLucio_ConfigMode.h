@@ -21,6 +21,8 @@
 #ifndef DJLucio_ConfigMode_h
 #define DJLucio_ConfigMode_h
 
+#include "DJLucio_Util.h"
+
 #ifdef DEBUG_CONFIG
 #define D_CFG(x)   DEBUG_PRINT(x)
 #define D_CFGLN(x) DEBUG_PRINTLN(x)

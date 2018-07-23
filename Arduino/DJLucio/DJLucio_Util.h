@@ -316,20 +316,18 @@ public:
 
 		if (duration != 0 && millis() - patternStart >= duration) {
 			stopBlinking();  // Blinking is done!
-			setLED(state);  // Re-write the state before blinking
 		}
 	}
 
 	void write(boolean out) {
-		if (out == state || currentlyBlinking == true) {
-			return;  // LED already at this state, or blinking
-		}
-		state = out;
+		if (out == state) { return; }  // LED already at this state
+		state = out;  // Save current state
+		if (currentlyBlinking == true) { return; }  // LED blinking, don't write
 		setLED(state);
 	}
 
 	void blink(uint16_t hertz) {
-		blink(hertz, 0);
+		blink(hertz, 0);  // Blink forever
 	}
 
 	void blink(uint16_t hertz, unsigned long length) {
@@ -346,6 +344,7 @@ public:
 
 	void stopBlinking() {
 		currentlyBlinking = false;
+		setLED(state);  // Re-write the state before blinking
 	}
 
 private:

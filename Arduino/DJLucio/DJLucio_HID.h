@@ -21,6 +21,8 @@
 #ifndef DJLucio_HID_h
 #define DJLucio_HID_h
 
+#include <Mouse.h>
+#include <Keyboard.h>
 #include "DJLucio_Util.h"
 
 #ifdef DEBUG_HID

@@ -21,6 +21,7 @@
 #ifndef DJLucio_ConfigMode_h
 #define DJLucio_ConfigMode_h
 
+#include <EEPROM.h>
 #include "DJLucio_Util.h"
 
 #ifdef DEBUG_CONFIG

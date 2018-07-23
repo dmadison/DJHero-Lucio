@@ -19,10 +19,6 @@
 */
 
 #include <NintendoExtensionCtrl.h>
-#include <Mouse.h>
-#include <Keyboard.h>
-
-#include <EEPROM.h>
 
 // User Settings
 const int8_t HorizontalSens = 5;  // Mouse sensitivity multipler - 6 max

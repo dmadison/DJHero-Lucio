@@ -27,6 +27,7 @@
 // User Settings
 const int8_t HorizontalSens = 5;  // Mouse sensitivity multipler - 6 max
 const int8_t VerticalSens   = 2;  // Mouse sensitivity multipler - 6 max
+const int8_t MaxAimInput = 20;    // Ignore aim values above this threshold as extranous
 
 // Tuning Options
 const unsigned long UpdateRate = 4;          // Controller polling rate, in milliseconds (ms)
@@ -174,9 +175,8 @@ void djController() {
 }
 
 void aiming(int8_t xIn, int8_t yIn) {
-	const int8_t MaxInput = 20;  // Ignore values above this threshold as extranous
-	static_assert(HorizontalSens * MaxInput <= 127, "Your sensitivity is too high!");  // Check for signed overflow (int8_t)
-	static_assert(VerticalSens   * MaxInput <= 127, "Your sensitivity is too high!");
+	static_assert(HorizontalSens * MaxAimInput <= 127, "Your sensitivity is too high!");  // Check for signed overflow (int8_t)
+	static_assert(VerticalSens   * MaxAimInput <= 127, "Your sensitivity is too high!");
 
 	static int8_t lastAim[2] = { 0, 0 };
 	int8_t * aim[2] = { &xIn, &yIn };  // Store in array for iterative access
@@ -184,7 +184,7 @@ void aiming(int8_t xIn, int8_t yIn) {
 	// Iterate through X/Y
 	for (int i = 0; i < 2; i++) {
 		// Check if above max threshold
-		if (abs(*aim[i]) >= MaxInput) {
+		if (abs(*aim[i]) >= MaxAimInput) {
 			*aim[i] = lastAim[i];
 		}
 

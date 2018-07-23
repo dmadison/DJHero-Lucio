@@ -23,6 +23,20 @@
 
 #include <NintendoExtensionCtrl.h>
 
+#ifdef DEBUG_CONTROLDETECT
+#define D_CD(x)   DEBUG_PRINT(x)
+#define D_CDLN(x) DEBUG_PRINTLN(x)
+#else
+#define D_CD(x)
+#define D_CDLN(x)
+#endif
+
+#ifdef DEBUG_COMMS
+#define D_COMMS(x) DEBUG_PRINTLN(x)
+#else
+#define D_COMMS(x)
+#endif
+
 extern LEDHandler LED;
 
 // EffectHandler: Keeps track of changes to the turntable's "effect dial"

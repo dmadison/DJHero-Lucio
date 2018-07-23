@@ -29,36 +29,6 @@
 #define DEBUG_PRINTLN(x)
 #endif
 
-#ifdef DEBUG_HID
-#define D_HID(x)   DEBUG_PRINT(x)
-#define D_HIDLN(x) DEBUG_PRINTLN(x)
-#else
-#define D_HID(x)
-#define D_HIDLN(x)
-#endif
-
-#ifdef DEBUG_COMMS
-#define D_COMMS(x) DEBUG_PRINTLN(x)
-#else
-#define D_COMMS(x)
-#endif
-
-#ifdef DEBUG_CONTROLDETECT
-#define D_CD(x)   DEBUG_PRINT(x)
-#define D_CDLN(x) DEBUG_PRINTLN(x)
-#else
-#define D_CD(x)
-#define D_CDLN(x)
-#endif
-
-#ifdef DEBUG_CONFIG
-#define D_CFG(x)   DEBUG_PRINT(x)
-#define D_CFGLN(x) DEBUG_PRINTLN(x)
-#else
-#define D_CFG(x)
-#define D_CFGLN(x)
-#endif
-
 // RateLimiter: Simple timekeeper that returns 'true' if X time has passed
 class RateLimiter {
 public:

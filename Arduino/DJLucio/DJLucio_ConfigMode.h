@@ -21,6 +21,14 @@
 #ifndef DJLucio_ConfigMode_h
 #define DJLucio_ConfigMode_h
 
+#ifdef DEBUG_CONFIG
+#define D_CFG(x)   DEBUG_PRINT(x)
+#define D_CFGLN(x) DEBUG_PRINTLN(x)
+#else
+#define D_CFG(x)
+#define D_CFGLN(x)
+#endif
+
 extern DJTurntableController::TurntableExpansion * mainTable;
 extern DJTurntableController::TurntableExpansion * altTable;
 

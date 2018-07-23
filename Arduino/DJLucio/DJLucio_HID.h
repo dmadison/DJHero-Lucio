@@ -21,6 +21,14 @@
 #ifndef DJLucio_HID_h
 #define DJLucio_HID_h
 
+#ifdef DEBUG_HID
+#define D_HID(x)   DEBUG_PRINT(x)
+#define D_HIDLN(x) DEBUG_PRINTLN(x)
+#else
+#define D_HID(x)
+#define D_HIDLN(x)
+#endif
+
 // HID_Button: Handles HID button state to prevent input spam
 class HID_Button {
 public:

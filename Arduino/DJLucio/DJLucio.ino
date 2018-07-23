@@ -110,8 +110,8 @@ void loop() {
 	if (controller.isReady()) {
 		djController();
 		config.check();
-		LED.update();
 	}
+	LED.update();
 }
 
 void djController() {

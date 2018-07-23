@@ -320,7 +320,6 @@ public:
 	}
 
 	void write(boolean out) {
-		if (out == state) { return; }  // LED already at this state
 		state = out;  // Save current state
 		if (currentlyBlinking == true) { return; }  // LED blinking, don't write
 		setLED(state);

@@ -123,6 +123,7 @@ private:
 	// Just for fun. Works out to be 508, which is less than
 	// the 512 bytes available on most smaller AVR boards
 	static const uint16_t EEPROM_Addr = 'L' + 'u' + 'c' + 'i' + 'o';
+	static_assert(EEPROM_Addr + 1 <= E2END, "EEPROM address larger than EEPROM space!");  // Var is two bytes
 
 	DJTurntableController & Controller;
 	const DJFunction ConfigInput;

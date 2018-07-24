@@ -55,4 +55,13 @@ const boolean LED_Inverted = false;
 #error Unsupported board! Use a Leonardo, Pro Micro, or Teensy
 #endif
 
+// Check Teensy USB type setting
+#if defined(TEENSYDUINO)
+#if !defined(USB_HID) && !defined(USB_SERIAL_HID)
+#error No USB HID! Did you select a board mode with Mouse + Keyboard?
+#elif !defined(LAYOUT_US_ENGLISH)
+#error Wrong keyboard layout: requires US English
+#endif
+#endif
+
 #endif

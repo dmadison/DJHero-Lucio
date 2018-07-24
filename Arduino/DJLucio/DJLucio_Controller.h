@@ -38,6 +38,7 @@
 #define D_COMMS(x)
 #endif
 
+extern DJTurntableController dj;
 extern LEDHandler LED;
 
 // EffectHandler: Keeps track of changes to the turntable's "effect dial"

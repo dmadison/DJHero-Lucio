@@ -120,11 +120,9 @@ private:
 		return side == Config::Left || side == Config::Right;
 	}
 
-	// Just for fun. Works out to be 508, which is less than
-	// the 512 bytes available on most smaller AVR boards. For
-	// boards with less space (e.g. the Teensy LC at 127), mod
-	// the size of the EEPROM from the preprocessor macro
-	static const uint16_t EEPROM_Addr = ('L' + 'u' + 'c' + 'i' + 'o') % E2END;
+	// Just for fun. Works out to be 540. No capital 'L' to
+	// avoid writing to the 0 address on the Teensy LC (508 % 127)
+	static const uint16_t EEPROM_Addr = ('l' + 'u' + 'c' + 'i' + 'o') % E2END;
 	static_assert(EEPROM_Addr + 1 <= E2END, "EEPROM address larger than EEPROM space!");  // Var is two bytes
 
 	DJTurntableController & Controller;

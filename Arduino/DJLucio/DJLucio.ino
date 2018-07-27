@@ -72,7 +72,7 @@ KeyboardButton jump(' ');
 EffectHandler fx(dj, EffectsTimeout);
 
 ConnectionHelper controller(dj, DetectPin, UpdateRate, DetectTime, ConnectRate);
-TurntableConfig config(dj, &DJTurntableController::buttonEuphoria, &DJTurntableController::TurntableExpansion::buttonGreen, 3000);
+TurntableConfig config(dj, &DJTurntableController::buttonEuphoria, &DJTurntableController::TurntableExpansion::buttonGreen, ConfigThreshold);
 
 void setup() {
 	#ifdef DEBUG

@@ -79,11 +79,15 @@ void setup() {
 	#ifdef DEBUG
 	Serial.begin(115200);
 	while (!Serial);  // Wait for connection
+	DEBUG_PRINTLN("#### DJ Hero - Lucio v?.? ####");
+	DEBUG_PRINTLN("By David Madison, (c) 2018");
+	DEBUG_PRINTLN("http://www.partsnotincluded.com");
+	DEBUG_PRINTLN("----------------------------");
 	#endif
 
 	pinMode(SafetyPin, INPUT_PULLUP);
-
 	if (digitalRead(SafetyPin) == LOW) {
+		DEBUG_PRINTLN("Safety loop activated! Exiting program");
 		for (;;);  // Safety loop!
 	}
 
@@ -91,11 +95,7 @@ void setup() {
 	config.read();  // Set expansion pointers from EEPROM config
 	controller.begin();  // Initialize controller bus and detect pins
 
-	while (!controller.isReady()) {
-		DEBUG_PRINTLN(F("Couldn't connect to turntable!"));
-		delay(500);
-	}
-	DEBUG_PRINTLN(F("Connected! Starting..."));
+	DEBUG_PRINTLN("Initialization finished. Starting program...");
 }
 
 void loop() {

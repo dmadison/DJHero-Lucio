@@ -55,7 +55,7 @@ public:
 
 		int8_t fxChange = fx.getChange();  // Change since last update
 
-										   // Check inactivity timer
+		// Check inactivity timer
 		if (fxChange != 0) {
 			timeout.reset();  // Keep alive
 		}
@@ -134,6 +134,7 @@ public:
 	void begin() {
 		detect.begin();  // Initialize CD pin as input
 		controller.begin();  // Start I2C bus
+		LED.blink(LED_BlinkSpeed);  // Start the LED blinking (disconnected)
 	}
 
 	// Automatically connects the controller, checks if it's ready for a new update, and 
@@ -180,6 +181,7 @@ public:
 private:
 	void onConnect() {
 		LED.write(HIGH);  // LED high = connected
+		LED.stopBlinking();
 		connected = true;
 		D_COMMS("Controller successfully connected!");	
 	}
@@ -187,6 +189,7 @@ private:
 	void disconnect() {
 		HID_Button::releaseAll();  // Something went wrong, clear current pressed buttons
 		LED.write(LOW);  // LED low = disconnected
+		LED.blink(LED_BlinkSpeed);  // ... also blinking
 		connected = false;
 		D_COMMS("Uh oh! Controller disconnected");
 	}
@@ -199,6 +202,8 @@ private:
 		#endif
 	}
 
+	static const float LED_BlinkSpeed;
+
 	ExtensionController & controller;
 	ControllerDetect detect;
 
@@ -207,5 +212,7 @@ private:
 
 	boolean connected = false;
 };
+
+const float ConnectionHelper::LED_BlinkSpeed = 0.5;
 
 #endif

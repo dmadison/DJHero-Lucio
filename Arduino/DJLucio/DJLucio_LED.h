@@ -45,19 +45,31 @@ public:
 	}
 
 	void setPeriod(unsigned long p) {
+		if (p == 0) { return; }  // What are you doing?
 		period = p;
-		resetTimer();
+		reset();
 	}
 
-	void setFrequency(unsigned long h) {
+	void setFrequency(float h) {
 		if (h == 0) { return; }  // Avoiding div/0
-		period = (1000 / h) / 2;  // 1000 because we're in milliseconds, /2 because the output has two phases
-		resetTimer();
+		period = frequencyToPeriod(h);
+		reset();
+	}
+
+	unsigned long frequencyToPeriod(float h) {
+		if (h == 0.0) { return 0; }  // Avoiding div/0
+		return (1000.0 / h) / 2.0;  // 1000 because we're in milliseconds, /2 because the output has two phases
+	}
+
+	float periodToFrequency(unsigned long p) {
+		if (p == 0) { return 0.0; }  // Avoiding div/0
+		return 1000.0 / (float)(p * 2);  // 1000 because we're in milliseconds, *2 because the output has two phases
 	}
 
 private:
-	void resetTimer() {
+	void reset() {
 		lastFlip = millis();  // Set the timer to ready
+		state = LOW;  // Start oscillator on low
 	}
 
 	boolean state;  // State of the oscillator, high or low
@@ -93,11 +105,11 @@ public:
 		setLED(state);
 	}
 
-	void blink(uint16_t hertz) {
+	void blink(float hertz) {
 		blink(hertz, 0);  // Blink forever
 	}
 
-	void blink(uint16_t hertz, unsigned long length) {
+	void blink(float hertz, unsigned long length) {
 		if (hertz == 0) {  // If frequency is 0, no blinking
 			stopBlinking();
 			return;

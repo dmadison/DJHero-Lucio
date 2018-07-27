@@ -142,12 +142,10 @@ public:
 		if (pollRate.ready() && isConnected()) {
 			connected = controller.update();  // New data
 			if (!connected) {
-				HID_Button::releaseAll();  // Something went wrong, clear current pressed buttons
-				LED.write(LOW);  // LED low = disconnected
-				D_COMMS("Bad update! Must reconnect");
+				onDisconnect();
 			}
 			else {
-				LED.write(HIGH);  // LED high = connected
+				onConnect();
 				D_COMMS("Successul update!");
 				#ifdef DEBUG_RAW
 				dj.printDebug();
@@ -177,6 +175,17 @@ public:
 	}
 
 private:
+	void onConnect() {
+		LED.write(HIGH);  // LED high = connected
+		D_COMMS("Controller successfully connected!");
+	}
+
+	void onDisconnect() {
+		HID_Button::releaseAll();  // Something went wrong, clear current pressed buttons
+		LED.write(LOW);  // LED low = disconnected
+		D_COMMS("Uh oh! Something went wrong. Must reconnect");
+	}
+
 	boolean controllerDetected() {
 		#ifdef IGNORE_DETECT_PIN 
 			return true;

@@ -81,6 +81,7 @@ public:
 	void read() {
 		EEPROM.get(EEPROM_Addr, currentConfig);
 		if (!validConfig(currentConfig)) {
+			D_CFGLN("CFG: EEPROM is bad! Rewriting...");
 			write(Config::Right);  // Fix dirty memory
 		}
 		reload();
@@ -93,10 +94,13 @@ private:
 		if (currentConfig == Config::Left) {
 			mainTable = &Controller.left;
 			altTable = &Controller.right;
+			D_CFGLN("CFG: Set main table LEFT");
 		}
+		// Right as main, left as alternate
 		else if (currentConfig == Config::Right) {
 			mainTable = &Controller.right;
 			altTable = &Controller.left;
+			D_CFGLN("CFG: Set main table RIGHT");
 		}
 	}
 
@@ -112,7 +116,7 @@ private:
 
 		LED.blink(5, 1000);  // Flash the LED to alert the user! 5 hz for 1 second (non-blocking)
 
-		D_CFG("Wrote new config! Main table: ");
+		D_CFG("CFG: Wrote new config! Main table: ");
 		D_CFGLN(side == Config::Left ? "Left" : "Right");
 	}
 

@@ -140,14 +140,11 @@ public:
 	// returns 'true' if there is new data to process.
 	boolean isReady() {
 		if (pollRate.ready() && isConnected()) {
-			connected = controller.update();  // New data
-			if (!connected) {
-				HID_Button::releaseAll();  // Something went wrong, clear current pressed buttons
-				LED.write(LOW);  // LED low = disconnected
-				D_COMMS("Bad update! Must reconnect");
+			if (!controller.update()) {  // Fetch new data
+				disconnect();
+				D_COMMS("Controller update failed :(");
 			}
 			else {
-				LED.write(HIGH);  // LED high = connected
 				D_COMMS("Successul update!");
 				#ifdef DEBUG_RAW
 				dj.printDebug();
@@ -164,19 +161,36 @@ public:
 		// If so, invalidate any present connection
 		if (!controllerDetected()) {
 			D_COMMS("Controller not detected (check your connections)");
-			return connected = false;
+			if (connected) { disconnect(); }  // Disconnect if connected
+			return false;  // No controller detected? Nothing else to do here
 		}
 
+		// Controller detect pin is high! So let's check our initialization.
 		// If not connected, attempt connection at regular interval
 		if (!connected && reconnectRate.ready()) {
-			connected = controller.connect();
 			D_COMMS("Connecting to controller...");
+			if (controller.connect()) {
+				onConnect();  // Successsful connection!
+			}
 		}
 
 		return connected;
 	}
 
 private:
+	void onConnect() {
+		LED.write(HIGH);  // LED high = connected
+		connected = true;
+		D_COMMS("Controller successfully connected!");	
+	}
+
+	void disconnect() {
+		HID_Button::releaseAll();  // Something went wrong, clear current pressed buttons
+		LED.write(LOW);  // LED low = disconnected
+		connected = false;
+		D_COMMS("Uh oh! Controller disconnected");
+	}
+
 	boolean controllerDetected() {
 		#ifdef IGNORE_DETECT_PIN 
 			return true;

@@ -86,8 +86,6 @@ void setup() {
 		for (;;);  // Safety loop!
 	}
 
-	startMultiplexer();  // Enable the multiplexer, currently being used as a level shifter (to be removed)
-
 	LED.begin();  // Set LED pin mode
 	config.read();  // Set expansion pointers from EEPROM config
 	controller.begin();  // Initialize controller bus and detect pins
@@ -203,11 +201,4 @@ void joyWASD(uint8_t x, uint8_t y) {
 
 	moveForward.press(y > JoyCenter + JoyDeadzone);
 	moveBack.press(y < JoyCenter - JoyDeadzone);
-}
-
-void startMultiplexer() {
-	Wire.begin();
-	Wire.beginTransmission(0x70);
-	Wire.write(1);
-	Wire.endTransmission();
 }

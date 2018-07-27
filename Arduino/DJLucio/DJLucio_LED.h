@@ -130,4 +130,6 @@ private:
 	unsigned long patternStart;
 };
 
+LEDHandler LED(LED_Pin, LED_Inverted);
+
 #endif

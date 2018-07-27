@@ -71,7 +71,6 @@ KeyboardButton jump(' ');
 
 EffectHandler fx(dj, EffectsTimeout);
 
-LEDHandler LED(LED_Pin, LED_Inverted);
 ConnectionHelper controller(dj, DetectPin, UpdateRate, DetectTime, ConnectRate);
 TurntableConfig config(dj, &DJTurntableController::buttonEuphoria, &DJTurntableController::TurntableExpansion::buttonGreen, 3000);
 

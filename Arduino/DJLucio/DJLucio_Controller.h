@@ -55,7 +55,7 @@ public:
 
 		int8_t fxChange = fx.getChange();  // Change since last update
 
-										   // Check inactivity timer
+		// Check inactivity timer
 		if (fxChange != 0) {
 			timeout.reset();  // Keep alive
 		}

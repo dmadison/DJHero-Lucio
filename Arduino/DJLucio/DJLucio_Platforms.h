@@ -96,7 +96,7 @@ const uint8_t SafetyPin = 32;
 
 // Check Teensy USB type setting
 #if defined(TEENSYDUINO)
-#if !defined(USB_HID) && !defined(USB_SERIAL_HID)
+#if !defined(USB_HID) && !defined(USB_SERIAL_HID) && !defined(USB_HID_TOUCHSCREEN)
 #error No USB HID! Did you select a board mode with Mouse + Keyboard?
 #elif !defined(LAYOUT_US_ENGLISH)
 #error Wrong keyboard layout: requires US English

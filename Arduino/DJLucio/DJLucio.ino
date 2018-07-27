@@ -86,7 +86,6 @@ void setup() {
 	#endif
 
 	pinMode(SafetyPin, INPUT_PULLUP);
-
 	if (digitalRead(SafetyPin) == LOW) {
 		for (;;);  // Safety loop!
 	}
@@ -95,11 +94,7 @@ void setup() {
 	config.read();  // Set expansion pointers from EEPROM config
 	controller.begin();  // Initialize controller bus and detect pins
 
-	while (!controller.isReady()) {
-		DEBUG_PRINTLN(F("Couldn't connect to turntable!"));
-		delay(500);
-	}
-	DEBUG_PRINTLN(F("Connected! Starting..."));
+	DEBUG_PRINTLN("Initialization finished. Starting program...");
 }
 
 void loop() {

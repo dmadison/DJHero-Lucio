@@ -140,10 +140,9 @@ public:
 	// returns 'true' if there is new data to process.
 	boolean isReady() {
 		if (pollRate.ready() && isConnected()) {
-			connected = controller.update();  // New data
-			if (!connected) {  // Update failed D:
-				D_COMMS("Controller update failed :(");
+			if (!controller.update()) {  // Fetch new data
 				onDisconnect();
+				D_COMMS("Controller update failed :(");
 			}
 			else {
 				D_COMMS("Successul update!");

@@ -114,7 +114,7 @@ private:
 		currentConfig = side;  // Save in local memory
 		reload();  // Rewrite current pointers with new selection
 
-		LED.blink(5, 1000);  // Flash the LED to alert the user! 5 hz for 1 second (non-blocking)
+		LED.blink(10, 1200);  // Flash the LED to alert the user! 10 hz for 1.2 seconds (non-blocking)
 
 		D_CFG("CFG: Wrote new config! Main table: ");
 		D_CFGLN(side == Config::Left ? "Left" : "Right");

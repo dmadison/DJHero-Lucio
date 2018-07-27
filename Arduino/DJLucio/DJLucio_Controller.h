@@ -141,7 +141,7 @@ public:
 	boolean isReady() {
 		if (pollRate.ready() && isConnected()) {
 			if (!controller.update()) {  // Fetch new data
-				onDisconnect();
+				disconnect();
 				D_COMMS("Controller update failed :(");
 			}
 			else {
@@ -161,7 +161,7 @@ public:
 		// If so, invalidate any present connection
 		if (!controllerDetected()) {
 			D_COMMS("Controller not detected (check your connections)");
-			if (connected) { onDisconnect(); }  // Disconnect if connected
+			if (connected) { disconnect(); }  // Disconnect if connected
 			return false;  // No controller detected? Nothing else to do here
 		}
 
@@ -184,7 +184,7 @@ private:
 		D_COMMS("Controller successfully connected!");	
 	}
 
-	void onDisconnect() {
+	void disconnect() {
 		HID_Button::releaseAll();  // Something went wrong, clear current pressed buttons
 		LED.write(LOW);  // LED low = disconnected
 		connected = false;

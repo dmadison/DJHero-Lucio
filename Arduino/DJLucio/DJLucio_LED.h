@@ -50,7 +50,7 @@ public:
 		resetTimer();
 	}
 
-	void setFrequency(unsigned long h) {
+	void setFrequency(float h) {
 		if (h == 0) { return; }  // Avoiding div/0
 		period = frequencyToPeriod(h);
 		resetTimer();
@@ -104,11 +104,11 @@ public:
 		setLED(state);
 	}
 
-	void blink(uint16_t hertz) {
+	void blink(float hertz) {
 		blink(hertz, 0);  // Blink forever
 	}
 
-	void blink(uint16_t hertz, unsigned long length) {
+	void blink(float hertz, unsigned long length) {
 		if (hertz == 0) {  // If frequency is 0, no blinking
 			stopBlinking();
 			return;

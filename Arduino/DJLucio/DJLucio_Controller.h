@@ -178,7 +178,11 @@ public:
 
 private:
 	boolean controllerDetected() {
-		return detect.isDetected();
+		#ifdef IGNORE_DETECT_PIN 
+			return true;
+		#else
+			return detect.isDetected();
+		#endif
 	}
 
 	ExtensionController & controller;

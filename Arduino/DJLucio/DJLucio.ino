@@ -32,6 +32,7 @@ const unsigned long ConnectRate = 500;       // Rate to attempt reconnections, i
 const unsigned long ConfigThreshold = 3000;  // Time the euphoria and green buttons must be held to set a new config (ms)
 const unsigned long EffectsTimeout = 1200;   // Timeout for the effects tracker, in ms
 const uint8_t       EffectThreshold = 10;    // Threshold to trigger abilities from the fx dial, 10 = 1/3rd of a revolution
+// #define IGNORE_DETECT_PIN                 // Ignore the state of the 'controller detect' pin, for breakouts without one.
 
 // Debug Flags (uncomment to add)
 // #define DEBUG                // Enable to use any prints

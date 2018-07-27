@@ -36,7 +36,7 @@
 // HID_Button: Handles HID button state to prevent input spam
 class HID_Button {
 public:
-	HID_Button(char k) : key(k) {
+	HID_Button(uint16_t k) : key(k) {
 		// If linked list is empty, set both head and tail
 		if (head == nullptr) {
 			head = this;
@@ -105,7 +105,7 @@ public:
 		}
 	}
 
-	const unsigned char key;
+	const uint16_t key;
 private:
 	static HID_Button * head;
 	static HID_Button * tail;

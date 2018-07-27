@@ -32,6 +32,7 @@ const unsigned long ConnectRate = 500;       // Rate to attempt reconnections, i
 const unsigned long ConfigThreshold = 3000;  // Time the euphoria and green buttons must be held to set a new config (ms)
 const unsigned long EffectsTimeout = 1200;   // Timeout for the effects tracker, in ms
 const uint8_t       EffectThreshold = 10;    // Threshold to trigger abilities from the fx dial, 10 = 1/3rd of a revolution
+// #define IGNORE_DETECT_PIN                 // Ignore the state of the 'controller detect' pin, for breakouts without one.
 
 // Debug Flags (uncomment to add)
 // #define DEBUG                // Enable to use any prints
@@ -71,15 +72,8 @@ KeyboardButton jump(' ');
 
 EffectHandler fx(dj, EffectsTimeout);
 
-const uint8_t DetectPin = 4;  // Pulled low by EXTERNAL pull-down (not optional!)
-const uint8_t SafetyPin = 9;  // Pulled high by internal pull-up
-const uint8_t LEDPin = 17;    // RX LED on the Pro Micro
-
-const boolean LEDInverted = true;  // Inverted on the Pro Micro (LOW is lit)
-
-LEDHandler LED(LEDPin, LEDInverted);
 ConnectionHelper controller(dj, DetectPin, UpdateRate, DetectTime, ConnectRate);
-TurntableConfig config(dj, &DJTurntableController::buttonEuphoria, &DJTurntableController::TurntableExpansion::buttonGreen, 3000);
+TurntableConfig config(dj, &DJTurntableController::buttonEuphoria, &DJTurntableController::TurntableExpansion::buttonGreen, ConfigThreshold);
 
 void setup() {
 	#ifdef DEBUG
@@ -92,8 +86,6 @@ void setup() {
 	if (digitalRead(SafetyPin) == LOW) {
 		for (;;);  // Safety loop!
 	}
-
-	startMultiplexer();  // Enable the multiplexer, currently being used as a level shifter (to be removed)
 
 	LED.begin();  // Set LED pin mode
 	config.read();  // Set expansion pointers from EEPROM config
@@ -210,11 +202,4 @@ void joyWASD(uint8_t x, uint8_t y) {
 
 	moveForward.press(y > JoyCenter + JoyDeadzone);
 	moveBack.press(y < JoyCenter - JoyDeadzone);
-}
-
-void startMultiplexer() {
-	Wire.begin();
-	Wire.beginTransmission(0x70);
-	Wire.write(1);
-	Wire.endTransmission();
 }

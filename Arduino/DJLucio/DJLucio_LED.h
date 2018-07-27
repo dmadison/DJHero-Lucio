@@ -21,6 +21,8 @@
 #ifndef DJLucio_LED_h
 #define DJLucio_LED_h
 
+#include "DJLucio_Platforms.h"
+
 // SoftwareOscillator: oscillates its state output based on the given period, using the millis() timer
 class SoftwareOscillator {
 public:
@@ -127,5 +129,7 @@ private:
 	unsigned long duration;
 	unsigned long patternStart;
 };
+
+LEDHandler LED(LED_Pin, LED_Inverted);
 
 #endif

@@ -81,6 +81,7 @@ public:
 	void read() {
 		EEPROM.get(EEPROM_Addr, currentConfig);
 		if (!validConfig(currentConfig)) {
+			D_CFGLN("CFG: EEPROM is bad! Rewriting...");
 			write(Config::Right);  // Fix dirty memory
 		}
 		reload();
@@ -93,10 +94,13 @@ private:
 		if (currentConfig == Config::Left) {
 			mainTable = &Controller.left;
 			altTable = &Controller.right;
+			D_CFGLN("CFG: Set main table LEFT");
 		}
+		// Right as main, left as alternate
 		else if (currentConfig == Config::Right) {
 			mainTable = &Controller.right;
 			altTable = &Controller.left;
+			D_CFGLN("CFG: Set main table RIGHT");
 		}
 	}
 
@@ -112,7 +116,7 @@ private:
 
 		LED.blink(5, 1000);  // Flash the LED to alert the user! 5 hz for 1 second (non-blocking)
 
-		D_CFG("Wrote new config! Main table: ");
+		D_CFG("CFG: Wrote new config! Main table: ");
 		D_CFGLN(side == Config::Left ? "Left" : "Right");
 	}
 
@@ -120,9 +124,10 @@ private:
 		return side == Config::Left || side == Config::Right;
 	}
 
-	// Just for fun. Works out to be 508, which is less than
-	// the 512 bytes available on most smaller AVR boards
-	static const uint16_t EEPROM_Addr = 'L' + 'u' + 'c' + 'i' + 'o';
+	// Just for fun. Works out to be 540. No capital 'L' to
+	// avoid writing to the 0 address on the Teensy LC (508 % 127)
+	static const uint16_t EEPROM_Addr = ('l' + 'u' + 'c' + 'i' + 'o') % E2END;
+	static_assert(EEPROM_Addr + 1 <= E2END, "EEPROM address larger than EEPROM space!");  // Var is two bytes
 
 	DJTurntableController & Controller;
 	const DJFunction ConfigInput;

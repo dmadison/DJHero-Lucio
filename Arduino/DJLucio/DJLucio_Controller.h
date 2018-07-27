@@ -38,6 +38,7 @@
 #define D_COMMS(x)
 #endif
 
+extern DJTurntableController dj;
 extern LEDHandler LED;
 
 // EffectHandler: Keeps track of changes to the turntable's "effect dial"
@@ -177,7 +178,11 @@ public:
 
 private:
 	boolean controllerDetected() {
-		return detect.isDetected();
+		#ifdef IGNORE_DETECT_PIN 
+			return true;
+		#else
+			return detect.isDetected();
+		#endif
 	}
 
 	ExtensionController & controller;

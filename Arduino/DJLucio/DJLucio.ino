@@ -87,6 +87,7 @@ void setup() {
 
 	pinMode(SafetyPin, INPUT_PULLUP);
 	if (digitalRead(SafetyPin) == LOW) {
+		DEBUG_PRINTLN("Safety loop activated! Exiting program");
 		for (;;);  // Safety loop!
 	}
 

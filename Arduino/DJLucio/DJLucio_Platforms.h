@@ -22,9 +22,19 @@
 #define DJLucio_Platforms_h
 
 /* Each board type requires the following definitions:
-*  * LED_Pin: the built-in LED pin on the board
+*
+*  * LED_Pin:      the built-in LED pin on the board
 *  * LED_Inverted: a boolean for whether the built-in LED is
 *                  active high (false) or active low (true)
+*
+*  * DetectPin:    pin for detecting whether the controller is
+*                  connected. Typically the next pin after the
+*                  I2C pins. Requires an external pull-down.
+*
+*  * SafetyPin:    last-resort pin to recover the microcontroller
+*                  in case of a programming error. Ground this pin to
+*                  halt execution at program start. Typically the Last
+*                  pin on the left side of the controller.
 */
 
 #if defined(__AVR_ATmega32U4__)
@@ -34,15 +44,24 @@
 const uint8_t LED_Pin = 17;  // RX LED on the Pro Micro
 const boolean LED_Inverted = true;  // Inverted on the Pro Micro (LOW is lit)
 
+const uint8_t DetectPin = 4;  // SDA 2, SCL 3
+const uint8_t SafetyPin = 9;
+
 // Arduino Leonardo
 #elif defined(ARDUINO_AVR_LEONARDO)
 const uint8_t LED_Pin = 13;
 const boolean LED_Inverted = false;
 
+const uint8_t DetectPin = 4;  // SDA 2, SCL 3
+const uint8_t SafetyPin = 12;
+
 // Teensy 2.0
 #elif defined(CORE_TEENSY)
 const uint8_t LED_Pin = 11;
 const boolean LED_Inverted = false;
+
+const uint8_t DetectPin = 7;  // SCL 5, SDA 6
+const uint8_t SafetyPin = 10;
 
 #endif  // 32U4 boards
 
@@ -51,11 +70,25 @@ const boolean LED_Inverted = false;
 const uint8_t LED_Pin = 6;
 const boolean LED_Inverted = false;
 
+const uint8_t DetectPin = 2;  // SCL 0, SDA 1
+const uint8_t SafetyPin = 17;
+
 // Teensy 3.0/3.1-3.2/LC/3.5/3.6
 #elif (defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MKL26Z64__) || \
        defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(CORE_TEENSY)
 const uint8_t LED_Pin = 13;
 const boolean LED_Inverted = false;
+
+const uint8_t DetectPin = 17;  // SCL 19, SDA 18
+
+// --- Teensy Short boards (3.0 / 3.1-3.2 / LC)
+#if defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MKL26Z64__)  
+const uint8_t SafetyPin = 12;
+
+// --- Teensy Long boards (3.5 / 3.6)
+#elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
+const uint8_t SafetyPin = 32;
+#endif  // Teensy 3.0 short vs long boards
 
 #else
 #error Unsupported board! Use a Leonardo, Pro Micro, or Teensy

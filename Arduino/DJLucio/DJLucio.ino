@@ -71,9 +71,6 @@ KeyboardButton jump(' ');
 
 EffectHandler fx(dj, EffectsTimeout);
 
-const uint8_t DetectPin = 4;  // Pulled low by EXTERNAL pull-down (not optional!)
-const uint8_t SafetyPin = 9;  // Pulled high by internal pull-up
-
 LEDHandler LED(LED_Pin, LED_Inverted);
 ConnectionHelper controller(dj, DetectPin, UpdateRate, DetectTime, ConnectRate);
 TurntableConfig config(dj, &DJTurntableController::buttonEuphoria, &DJTurntableController::TurntableExpansion::buttonGreen, 3000);

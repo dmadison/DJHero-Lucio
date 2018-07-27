@@ -21,6 +21,12 @@
 #ifndef DJLucio_Platforms_h
 #define DJLucio_Platforms_h
 
+/* Each board type requires the following definitions:
+*  * LED_Pin: the built-in LED pin on the board
+*  * LED_Inverted: a boolean for whether the built-in LED is
+*                  active high (false) or active low (true)
+*/
+
 #if defined(__AVR_ATmega32U4__)
 
 // Arduino Pro Micro 5V / 3.3V

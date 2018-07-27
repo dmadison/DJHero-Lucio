@@ -45,14 +45,25 @@ public:
 	}
 
 	void setPeriod(unsigned long p) {
+		if (p == 0) { return; }  // What are you doing?
 		period = p;
 		resetTimer();
 	}
 
 	void setFrequency(unsigned long h) {
 		if (h == 0) { return; }  // Avoiding div/0
-		period = (1000 / h) / 2;  // 1000 because we're in milliseconds, /2 because the output has two phases
+		period = frequencyToPeriod(h);
 		resetTimer();
+	}
+
+	unsigned long frequencyToPeriod(float h) {
+		if (h == 0.0) { return 0; }  // Avoiding div/0
+		return (1000.0 / h) / 2.0;  // 1000 because we're in milliseconds, /2 because the output has two phases
+	}
+
+	float periodToFrequency(unsigned long p) {
+		if (p == 0) { return 0.0; }  // Avoiding div/0
+		return 1000.0 / (float)(p * 2);  // 1000 because we're in milliseconds, *2 because the output has two phases
 	}
 
 private:

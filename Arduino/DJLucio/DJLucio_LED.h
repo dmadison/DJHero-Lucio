@@ -47,13 +47,13 @@ public:
 	void setPeriod(unsigned long p) {
 		if (p == 0) { return; }  // What are you doing?
 		period = p;
-		resetTimer();
+		reset();
 	}
 
 	void setFrequency(float h) {
 		if (h == 0) { return; }  // Avoiding div/0
 		period = frequencyToPeriod(h);
-		resetTimer();
+		reset();
 	}
 
 	unsigned long frequencyToPeriod(float h) {
@@ -67,8 +67,9 @@ public:
 	}
 
 private:
-	void resetTimer() {
+	void reset() {
 		lastFlip = millis();  // Set the timer to ready
+		state = LOW;  // Start oscillator on low
 	}
 
 	boolean state;  // State of the oscillator, high or low

@@ -45,7 +45,6 @@ public:
 	}
 
 	void setPeriod(unsigned long p) {
-		if (p == 0) { return; }  // What are you doing?
 		period = p;
 		reset();
 	}

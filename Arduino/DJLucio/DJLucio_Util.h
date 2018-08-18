@@ -29,7 +29,8 @@
 #define DEBUG_PRINTLN(x)
 #endif
 
-// RateLimiter: Simple timekeeper that returns 'true' if X time has passed
+// RateLimiter: Simple timekeeper that returns 'true' if X time has passed.
+//              Uses millis() as its clock.
 class RateLimiter {
 public:
 	RateLimiter(unsigned long rate) : UpdateRate(rate) {

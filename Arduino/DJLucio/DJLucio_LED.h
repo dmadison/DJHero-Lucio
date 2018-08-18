@@ -23,7 +23,7 @@
 
 #include "DJLucio_Platforms.h"
 
-// SoftwareOscillator: oscillates its state output based on the given period, using the millis() timer
+// SoftwareOscillator: oscillates its state output based on the given period, using the millis() timekeeper
 class SoftwareOscillator {
 public:
 	boolean getState() {
@@ -45,7 +45,6 @@ public:
 	}
 
 	void setPeriod(unsigned long p) {
-		if (p == 0) { return; }  // What are you doing?
 		period = p;
 		reset();
 	}
@@ -142,6 +141,6 @@ private:
 	unsigned long patternStart;
 };
 
-LEDHandler LED(LED_Pin, LED_Inverted);
+LEDHandler LED(LED_Pin, LED_Inverted);  // Default LED instance, using the platform definitions
 
 #endif

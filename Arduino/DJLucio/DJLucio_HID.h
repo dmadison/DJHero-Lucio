@@ -51,6 +51,7 @@ public:
 	}
 
 	~HID_Button() {
+		// If we're at the start of the list...
 		if (this == head) {
 			// Option #1: Only element in the list
 			if (this == tail) {
@@ -96,7 +97,8 @@ public:
 		press(false);
 	}
 
-	static void releaseAll() {  // Release all buttons, using the linked list
+	// Release all buttons, using the linked list
+	static void releaseAll() {
 		HID_Button * ptr = head;
 
 		while (ptr != nullptr) {

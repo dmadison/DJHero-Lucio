@@ -51,7 +51,7 @@ public:
 	}
 
 	void update() {
-		const uint8_t MaxChange = 5;
+		const uint8_t MaxChange = 5;  // Arbitrary, for spurious value check
 
 		int8_t fxChange = fx.getChange();  // Change since last update
 
@@ -91,7 +91,7 @@ public:
 	ControllerDetect(uint8_t pin, unsigned long stableWait) : Pin(pin), StableTime(stableWait) {}
 
 	void begin() {
-		pinMode(Pin, INPUT);
+		pinMode(Pin, INPUT);  // Requires external pull-down!
 	}
 
 	boolean isDetected() {
@@ -125,7 +125,7 @@ private:
 	boolean detected = true;  // Assume controller is detected for first call
 };
 
-// ConnectionHelper: Keeps track of the controller's 'connected' state, and auto-updating control data
+// ConnectionHelper: Keeps track of the controller's 'connected' state, and auto-updates control data
 class ConnectionHelper {
 public:
 	ConnectionHelper(ExtensionController &con, uint8_t cdPin, unsigned long pollTime, unsigned long cdWaitTime, unsigned long reconnectTime) :
@@ -196,7 +196,7 @@ private:
 
 	boolean controllerDetected() {
 		#ifdef IGNORE_DETECT_PIN 
-			return true;
+			return true;  // No detect pin, just assume the controller is there
 		#else
 			return detect.isDetected();
 		#endif
@@ -213,6 +213,6 @@ private:
 	boolean connected = false;
 };
 
-const float ConnectionHelper::LED_BlinkSpeed = 0.5;
+const float ConnectionHelper::LED_BlinkSpeed = 0.5;  // Hertz
 
 #endif

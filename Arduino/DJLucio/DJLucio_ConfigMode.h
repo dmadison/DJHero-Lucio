@@ -32,6 +32,7 @@
 #define D_CFGLN(x)
 #endif
 
+// Table side pointers, included in the main sketch
 extern DJTurntableController::TurntableExpansion * mainTable;
 extern DJTurntableController::TurntableExpansion * altTable;
 
@@ -40,7 +41,7 @@ class TurntableConfig {
 public:
 	typedef boolean(DJTurntableController::Data::*DJFunction)(void) const;  // Wrapper for the body function pointer
 	typedef boolean(DJTurntableController::Data::TurntableExpansion::*ExpansionFunction)(void) const;  // Wrapper for the expansion function pointers
-	typedef DJTurntableController::TurntableConfig Config;
+	typedef DJTurntableController::TurntableConfig Config;  // Wrapper for the config side enum
 
 	TurntableConfig(DJTurntableController &obj, DJFunction baseFunc, ExpansionFunction exFunc, unsigned long t)
 		: Controller(obj), ConfigInput(baseFunc), SideSelectInput(exFunc), StableTime(t), limiter(t / 2) {}
@@ -136,7 +137,7 @@ private:
 	const unsigned long StableTime;  // How long inputs must be stable for
 	RateLimiter limiter;  // Prevents spamming config writes
 
-	HeldFor configButton = HeldFor(true);  // Looking for "pressed" state on all 3 buttons
+	HeldFor configButton = HeldFor(true);  // Looking for "pressed" (true) state on all 3 buttons
 	HeldFor leftExpansion = HeldFor(true);
 	HeldFor rightExpansion = HeldFor(true);
 

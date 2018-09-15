@@ -110,7 +110,15 @@ void djController() {
 	// Dual turntables
 	if (dj.getNumTurntables() == 2) {
 		if (!dj.buttonMinus()) {  // Button to disable aiming (for position correction)
-			aiming(mainTable->turntable(), altTable->turntable());
+			// Left is vertical, counter-clockwise is up
+			if (altTable == &dj.left) {
+				aiming(mainTable->turntable(), altTable->turntable());
+			}
+			// Right is vertical, clockwise is up
+			else {
+				aiming(mainTable->turntable(), -altTable->turntable());
+			}
+			
 		}
 
 		// Movement
@@ -125,7 +133,15 @@ void djController() {
 	else if (dj.getNumTurntables() == 1) {
 		// Aiming
 		if (dj.buttonMinus()) {  // Vertical selector
-			aiming(0, dj.turntable());
+			// Left is vertical, counter-clockwise is up
+			if (dj.getTurntableConfig() == DJTurntableController::TurntableConfig::Left) { 
+				aiming(0, dj.turntable());
+			}
+			// Right is vertical, clockwise is up
+			else {
+				aiming(0, -dj.turntable());
+			}
+			
 		}
 		else {
 			aiming(dj.turntable(), 0);

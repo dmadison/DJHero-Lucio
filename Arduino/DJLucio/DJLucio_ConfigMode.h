@@ -39,8 +39,8 @@ extern DJTurntableController::TurntableExpansion * altTable;
 // TurntableConfig: Handles switching between "main" and "alternate" sides of the turntable
 class TurntableConfig {
 public:
-	typedef boolean(DJTurntableController::Data::*DJFunction)(void) const;  // Wrapper for the body function pointer
-	typedef boolean(DJTurntableController::Data::TurntableExpansion::*ExpansionFunction)(void) const;  // Wrapper for the expansion function pointers
+	typedef boolean(DJTurntableController::*DJFunction)(void) const;  // Wrapper for the body function pointer
+	typedef boolean(DJTurntableController::TurntableExpansion::*ExpansionFunction)(void) const;  // Wrapper for the expansion function pointers
 	typedef DJTurntableController::TurntableConfig Config;  // Wrapper for the config side enum
 
 	TurntableConfig(DJTurntableController &obj, DJFunction baseFunc, ExpansionFunction exFunc, unsigned long t)

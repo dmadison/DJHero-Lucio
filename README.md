@@ -1,7 +1,7 @@
 # DJ Hero Lucio
 This project allows a user to play the character of [Lucio](https://playoverwatch.com/en-us/heroes/lucio/) in *Overwatch* using an Arduino and a DJ Hero turntable for the Nintendo Wii.
 
-For more information, check out the blog post on [PartsNotIncluded.com](http://www.partsnotincluded.com/altctrl/playing-lucio-with-a-dj-hero-turntable).
+For more information, check out the blog post on [PartsNotIncluded.com](https://www.partsnotincluded.com/playing-lucio-with-a-dj-hero-turntable/).
 
 ## Dependencies
 The DJ Hero Lucio program uses my [NintendoExtensionCtrl library](https://github.com/dmadison/NintendoExtensionCtrl/) ([0.7.1](https://github.com/dmadison/NintendoExtensionCtrl/releases/tag/v0.7.1)) to handle communication to the DJ Hero controller itself.

@@ -167,7 +167,7 @@ void djController() {
 	// Abilities
 	ultimate.press(dj.buttonEuphoria());
 	amp.press(fx.changed(EffectThreshold) && fx.getTotal() > 0);
-	crossfade.press(dj.crossfadeSlider() > 1);
+	crossfade.press(dj.crossfadeSlider() > 9);  // 7/8 is centered
 
 	// Fun stuff!
 	emotes.press(dj.buttonPlus());

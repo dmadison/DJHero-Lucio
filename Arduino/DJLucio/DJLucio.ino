@@ -79,7 +79,7 @@ void setup() {
 	#ifdef DEBUG
 	Serial.begin(115200);
 	while (!Serial);  // Wait for connection
-	DEBUG_PRINTLN("DJ Hero - Lucio v1.0.2");
+	DEBUG_PRINTLN("DJ Hero - Lucio v1.0.3");
 	DEBUG_PRINTLN("By David Madison, (c) 2018");
 	DEBUG_PRINTLN("http://www.partsnotincluded.com");
 	DEBUG_PRINTLN("----------------------------");
